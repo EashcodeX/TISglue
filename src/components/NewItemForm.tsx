@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   ArrowLeft,
   Save,
@@ -73,19 +74,56 @@ export default function NewItemForm({
     }
   }
 
+  const { isAdmin } = useAuth() as any
+
   const handleAlternativeSubmit = async () => {
     setSaving(true)
     setError(null)
 
     try {
+      if (!isAdmin) {
+        setError('You do not have permission to perform this action.')
+        setSaving(false)
+        return
+      }
+
       console.log('🔐 Saving password via alternative method...')
+
+      // Normalize payload to satisfy varying API/DB schemas
+      const normalizedPayload = {
+        ...formData,
+        // Ensure both name and title are provided, map whichever user filled
+        title: (formData as any).title ?? (formData as any).name ?? undefined,
+        name: (formData as any).name ?? (formData as any).title ?? undefined,
+        // Normalize password field names
+        password_value:
+          (formData as any).password_value ??
+          (formData as any).password ??
+          (formData as any).password_encrypted ?? undefined,
+      }
+
+      // Avoid sending conflicting raw password keys
+      delete (normalizedPayload as any).password
+      delete (normalizedPayload as any).password_encrypted
+
+      // Masked log for debugging
+      console.log('🧰 Payload to API:', {
+        ...normalizedPayload,
+        password_value: normalizedPayload.password_value ? '[REDACTED]' : undefined,
+      })
+
+      // Include Supabase access token so the API can authenticate even across hosts/ports
+      const { data: { session } } = await supabase.auth.getSession()
+      const accessToken = session?.access_token
 
       const response = await fetch('/api/passwords/create', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
         },
-        body: JSON.stringify(formData)
+        credentials: 'include',
+        body: JSON.stringify(normalizedPayload)
       })
 
       const data = await response.json()

@@ -52,11 +52,7 @@ const nextConfig = {
   // Redirects
   async redirects() {
     return [
-      {
-        source: '/admin',
-        destination: '/organizations',
-        permanent: false,
-      },
+      // Removed admin redirect to allow access to admin dashboard
     ]
   },
   

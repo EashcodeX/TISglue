@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, type Organization } from '@/lib/supabase'
+import { useAuth } from '@/contexts/AuthContext'
 import { useClient, useClientInitials, useClientColor } from '@/contexts/ClientContext'
 import Header from '@/components/Header'
 import {
@@ -30,11 +31,15 @@ export default function OrganizationsPage() {
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
   const [searchTerm, setSearchTerm] = useState('')
+  const { session } = useAuth()
+
   const [favorites, setFavorites] = useState<string[]>([])
 
   useEffect(() => {
+    // Wait for a session before fetching so PostgREST has a JWT
+    if (!session) return
     fetchOrganizations()
-  }, [])
+  }, [session])
 
   const fetchOrganizations = async () => {
     try {
@@ -44,7 +49,10 @@ export default function OrganizationsPage() {
         .select('*')
         .order('name')
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase organizations error:', { message: error.message, details: (error as any).details, hint: (error as any).hint })
+        throw error
+      }
       setOrganizations(data || [])
     } catch (err) {
       console.error('Error fetching organizations:', err)

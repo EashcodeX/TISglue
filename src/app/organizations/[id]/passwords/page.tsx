@@ -7,6 +7,7 @@ import { useClient } from '@/contexts/ClientContext'
 import Sidebar from '@/components/Sidebar'
 import Header from '@/components/Header'
 import DeleteConfirmation from '@/components/DeleteConfirmation'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   Search,
   Upload,
@@ -28,6 +29,8 @@ import {
 export default function PasswordsPage() {
   const params = useParams()
   const router = useRouter()
+  const { isAdmin, isSuperAdmin } = useAuth()
+
   const { selectedClient } = useClient()
   const [organization, setOrganization] = useState<Organization | null>(null)
   const [passwords, setPasswords] = useState<Password[]>([])
@@ -196,7 +199,7 @@ export default function PasswordsPage() {
       <Header currentPage="Organizations" />
       <div className="flex">
         <Sidebar onItemClick={handleSidebarItemClick} />
-        
+
         <div className="flex-1 p-6">
           {/* Page Header */}
           <div className="flex items-center justify-between mb-6">
@@ -216,13 +219,15 @@ export default function PasswordsPage() {
                 <Upload className="w-4 h-4" />
                 <span>Import</span>
               </button>
-              <button 
-                onClick={() => router.push(`/organizations/${params.id}/passwords/new`)}
-                className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm"
-              >
-                <Plus className="w-4 h-4" />
-                <span>New</span>
-              </button>
+              {(isAdmin || isSuperAdmin) && (
+                <button
+                  onClick={() => router.push(`/organizations/${params.id}/passwords/new`)}
+                  className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>New</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -324,8 +329,8 @@ export default function PasswordsPage() {
                               )}
                             </button>
                             <span className="text-gray-300 font-mono text-sm">
-                              {visiblePasswords.has(password.id) 
-                                ? password.password_value 
+                              {visiblePasswords.has(password.id)
+                                ? password.password_value
                                 : maskPassword(password.password_value || '••••••••')
                               }
                             </span>
@@ -350,20 +355,24 @@ export default function PasswordsPage() {
                             <button className="p-1 text-gray-400 hover:text-white">
                               <Eye className="w-4 h-4" />
                             </button>
-                            <button
-                              onClick={() => handleEdit(password)}
-                              className="p-1 text-gray-400 hover:text-blue-400"
-                              title="Edit Password"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(password)}
-                              className="p-1 text-gray-400 hover:text-red-400"
-                              title="Delete Password"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            {(isAdmin || isSuperAdmin) && (
+                              <>
+                                <button
+                                  onClick={() => handleEdit(password)}
+                                  className="p-1 text-gray-400 hover:text-blue-400"
+                                  title="Edit Password"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(password)}
+                                  className="p-1 text-gray-400 hover:text-red-400"
+                                  title="Delete Password"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
                             <button className="p-1 text-gray-400 hover:text-white">
                               <MoreHorizontal className="w-4 h-4" />
                             </button>

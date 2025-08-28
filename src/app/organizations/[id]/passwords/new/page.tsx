@@ -4,6 +4,8 @@ import { useParams } from 'next/navigation'
 import NewItemForm from '@/components/NewItemForm'
 import Header from '@/components/Header'
 import Sidebar from '@/components/Sidebar'
+import RequireAdmin from '@/components/RequireAdmin'
+
 
 export default function NewPasswordPage() {
   const params = useParams()
@@ -24,7 +26,7 @@ export default function NewPasswordPage() {
       placeholder: 'Enter username'
     },
     {
-      name: 'password',
+      name: 'password_value',
       label: 'Password',
       type: 'text' as const,
       required: true,
@@ -86,20 +88,22 @@ export default function NewPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <Header currentPage="Organizations" />
-      <div className="flex">
-        <Sidebar onItemClick={handleSidebarItemClick} />
-        <div className="flex-1">
-          <NewItemForm
-            title="New Password"
-            tableName="passwords"
-            organizationId={params.id as string}
-            fields={fields}
-            redirectPath={`/organizations/${params.id}/passwords`}
-          />
+    <RequireAdmin>
+      <div className="min-h-screen bg-gray-900 text-white">
+        <Header currentPage="Organizations" />
+        <div className="flex">
+          <Sidebar onItemClick={handleSidebarItemClick} />
+          <div className="flex-1">
+            <NewItemForm
+              title="New Password"
+              tableName="passwords"
+              organizationId={params.id as string}
+              fields={fields}
+              redirectPath={`/organizations/${params.id}/passwords`}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </RequireAdmin>
   )
 }

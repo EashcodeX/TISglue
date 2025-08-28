@@ -1,20 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
-import { 
-  Eye, 
-  EyeOff, 
-  Mail, 
-  Lock, 
-  AlertCircle, 
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  AlertCircle,
   Loader2,
   Building2
 } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const { signIn, user, loading: authLoading } = useAuth()
   const [formData, setFormData] = useState({
@@ -24,6 +24,9 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams?.get('redirect') || '/'
+
 
   // Redirect if already logged in
   useEffect(() => {
@@ -39,11 +42,11 @@ export default function LoginPage() {
 
     try {
       const { error } = await signIn(formData.email, formData.password)
-      
+
       if (error) {
         setError(error.message)
       } else {
-        router.push('/')
+        router.push(redirectTo)
       }
     } catch (err) {
       setError('An unexpected error occurred')
@@ -207,5 +210,17 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }

@@ -25,6 +25,10 @@ export interface Organization {
   updated_at: string
   created_by?: string
   updated_by?: string
+  quick_notes?: string
+  passed_count?: number
+  not_viewed_count?: number
+  failed_count?: number
 }
 
 export interface User {
@@ -213,6 +217,93 @@ export interface Location {
   notes?: string
   created_at: string
   updated_at: string
+}
+
+export interface SiteSummary {
+  id: string
+  organization_id: string
+  primary_contact?: string
+  secondary_contact?: string
+  emergency_contact?: string
+  after_hours_access_instructions?: string
+  time_zone?: string
+  hours_of_operation?: string
+  site_description?: string
+  access_notes?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface SiteSummaryLegacy {
+  id: string
+  organization_id: string
+  title?: string
+  locations?: string[]
+  primary_contacts?: string[]
+  emergency_contacts?: string[]
+  onboarding_details?: string
+  notes?: string
+  access_permissions?: string[]
+  created_at: string
+  updated_at: string
+}
+
+export interface SidebarCategory {
+  id: string
+  organization_id: string
+  category_key: string
+  category_name: string
+  display_order: number
+  is_collapsible: boolean
+  is_expanded: boolean
+  is_visible: boolean
+  is_system: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface SidebarItem {
+  id: string
+  organization_id: string
+  category_id?: string
+  item_key: string
+  item_label: string
+  item_name: string  // Alias for item_label
+  item_href?: string
+  item_slug?: string  // Alias for item_href
+  icon_name: string
+  icon?: string  // Alias for icon_name
+  display_order: number
+  sort_order?: number  // Alias for display_order
+  is_visible: boolean
+  is_active?: boolean  // Alias for is_visible
+  is_system: boolean
+  count_source?: string
+  count_query?: string
+  description?: string
+  parent_category?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface SidebarUserPreference {
+  id: string
+  user_id: string
+  organization_id: string
+  category_id?: string
+  item_id?: string
+  is_expanded?: boolean
+  is_visible?: boolean
+  custom_order?: number
+  created_at: string
+  updated_at: string
+}
+
+export interface SidebarConfig {
+  categories: SidebarCategory[]
+  items: SidebarItem[]
+  userPreferences?: SidebarUserPreference[]
+  counts?: Record<string, number>
 }
 
 export interface Favorite {

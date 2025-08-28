@@ -4,10 +4,15 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { User, Session } from '@supabase/supabase-js'
 
+type Role = 'user' | 'admin' | 'super_admin'
+
 interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
+  role: Role | null
+  isAdmin: boolean
+  isSuperAdmin: boolean
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signUp: (email: string, password: string, userData?: any) => Promise<{ error: any }>
   signOut: () => Promise<void>
@@ -16,38 +21,65 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [role, setRole] = useState<Role | null>(null)
 
   useEffect(() => {
-    // Get initial session
     const getInitialSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       setSession(session)
       setUser(session?.user ?? null)
+      if (session?.user?.id) await fetchUserRole(session.user.id)
       setLoading(false)
     }
-
     getInitialSession()
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session)
         setUser(session?.user ?? null)
+        if (session?.user?.id) await fetchUserRole(session.user.id)
         setLoading(false)
-
-        // Update user profile if needed
         if (session?.user && event === 'SIGNED_IN') {
           await updateUserProfile(session.user)
         }
       }
     )
-
     return () => subscription.unsubscribe()
   }, [])
+
+  const fetchUserRole = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', userId)
+        .single()
+      if (error || !data?.role) {
+        // Fallback: check server-side helper in case row is missing
+        const { data: isSA } = await supabase.rpc('is_super_admin')
+        if (isSA === true) {
+          setRole('super_admin')
+        } else {
+          setRole('user')
+        }
+      } else {
+        // normalize common variants
+        const raw = String(data.role).toLowerCase()
+        const r = raw.replace('-', '_').replace(' ', '_')
+        if (r === 'super_admin' || r === 'superadmin') setRole('super_admin')
+        else if (r === 'admin' || r === 'manager') setRole('admin')
+        else if (r === 'read_only' || r === 'readonly' || r === 'viewer') setRole('user')
+        else setRole('user')
+      }
+    } catch {
+      setRole('user')
+    }
+  }
 
   const updateUserProfile = async (user: User) => {
     try {
@@ -56,22 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .select('id')
         .eq('id', user.id)
         .single()
-
-      if (!existingUser) {
-        // Create user profile if it doesn't exist
-        await supabase
-          .from('users')
-          .insert({
-            id: user.id,
-            email: user.email,
-            full_name: user.user_metadata?.full_name || '',
-            avatar_url: user.user_metadata?.avatar_url || '',
-            role: 'user',
-            status: 'active',
-            last_login_at: new Date().toISOString()
-          })
-      } else {
-        // Update last login
+      if (existingUser) {
         await supabase
           .from('users')
           .update({ last_login_at: new Date().toISOString() })
@@ -116,6 +133,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     session,
     loading,
+    role,
+    isAdmin: role === 'admin' || role === 'super_admin',
+    isSuperAdmin: role === 'super_admin',
     signIn,
     signUp,
     signOut,

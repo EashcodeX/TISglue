@@ -72,34 +72,55 @@ export default function DynamicPage() {
 
       setOrganization(orgData)
 
-      // Find the sidebar item by slug
-      const sidebarItems = await SidebarService.getOrganizationSidebarItems(organizationId)
-      const item = sidebarItems.find(item => item.item_slug === slug)
+      // Resolve the sidebar item by slug (match by href without leading slash OR by item_key)
+      const sidebarConfig = await SidebarService.getDynamicSidebarConfig(organizationId)
+      const items = sidebarConfig.items || []
+      const normalizedSlug = String(slug || '').replace(/^\//, '')
+      const item = items.find((it: any) => {
+        const hrefSlug = (it.item_href || '').replace(/^\//, '')
+        return hrefSlug === normalizedSlug || it.item_key === normalizedSlug
+      })
 
       if (!item) {
-        setError(`Page not found: ${slug}`)
+        // No matching item: show placeholder page instead of error
+        setSidebarItem({
+          id: 'placeholder',
+          organization_id: organizationId,
+          item_name: normalizedSlug,
+          item_slug: normalizedSlug,
+          item_type: 'placeholder',
+          icon: 'FileText',
+          sort_order: 0,
+          is_active: true,
+          is_system: true,
+          created_at: '',
+          updated_at: ''
+        } as any)
+        setPageContent(null)
         return
       }
 
-      setSidebarItem(item)
+      setSidebarItem({
+        id: item.id,
+        organization_id: organizationId,
+        item_name: item.item_label,
+        item_slug: (item.item_href || '').replace(/^\//, '') || item.item_key,
+        item_type: 'system',
+        icon: item.icon_name || 'FileText',
+        sort_order: item.display_order || 0,
+        is_active: true,
+        is_system: true,
+        created_at: '',
+        updated_at: ''
+      } as any)
 
-      // Load page content if it exists
+      // Load page content if it exists; otherwise show placeholder without error
       try {
         const content = await PageContentService.getPageContent(item.id)
         setPageContent(content)
       } catch (contentError) {
-        console.error('Error fetching page content:', contentError)
-
-        // If it's a "not found" error, show a helpful message
-        if (contentError instanceof Error && contentError.message.includes('No page content found')) {
-          console.log('⚠️ No page content found for sidebar item:', item.id)
-          setError(`Page content not found. This sidebar item may not have been set up correctly. Please recreate it through Sidebar Management.`)
-          return
-        } else {
-          // For other errors (like table doesn't exist), show the error
-          setError(`Failed to load page content: ${contentError instanceof Error ? contentError.message : 'Unknown error'}`)
-          return
-        }
+        console.warn('No page content available; showing placeholder.')
+        setPageContent(null)
       }
 
     } catch (err) {

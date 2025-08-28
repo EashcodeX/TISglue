@@ -128,7 +128,7 @@ export default function AutoFixRouting() {
               }
 
             } catch (error) {
-              addResult(`    ❌ Exception deleting ${item.item_name}: ${error.message}`)
+              addResult(`    ❌ Exception deleting ${item.item_name}: ${error instanceof Error ? error.message : String(error)}`)
             }
           }
         } else {
@@ -186,7 +186,7 @@ export default function AutoFixRouting() {
       addResult('🔄 Please refresh your browser and test navigation')
 
     } catch (error) {
-      addResult(`❌ Auto-fix failed: ${error.message}`)
+      addResult(`❌ Auto-fix failed: ${error instanceof Error ? error.message : String(error)}`)
     }
     
     setFixing(false)

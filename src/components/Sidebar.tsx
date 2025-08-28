@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { SidebarService, type SidebarCategory } from '@/lib/sidebar-service'
+import { type SidebarConfig, type SidebarCategory as DBSidebarCategory, type SidebarItem as DBSidebarItem } from '@/lib/supabase'
+import SidebarEditor from '@/components/SidebarEditor'
 import { useGlobalSearch } from '@/hooks/useGlobalSearch'
 import { useSearchContext } from '@/hooks/useSearchContext'
 import {
@@ -266,9 +268,11 @@ export default function Sidebar({
   const { openSearch } = useGlobalSearch()
   const searchContext = useSearchContext()
   const [sidebarConfig, setSidebarConfig] = useState<SidebarSection[]>([])
+  const [dynamicConfig, setDynamicConfig] = useState<SidebarConfig | null>(null)
   const [loading, setLoading] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
   const [currentOrgId, setCurrentOrgId] = useState<string | null>(null)
+  const [showEditor, setShowEditor] = useState(false)
 
   // Load dynamic sidebar items for the current organization
   useEffect(() => {
@@ -313,8 +317,22 @@ export default function Sidebar({
       setLoading(true)
       console.log('🔄 Loading dynamic sidebar for organization:', organizationId)
 
-      const sidebarData = await SidebarService.getOrganizationSidebarByCategory(organizationId)
-      console.log('📊 Sidebar data received for org', organizationId, ':', sidebarData)
+      // First, try to initialize default sidebar if it doesn't exist
+      console.log('🔧 About to call SidebarService.initializeDefaultSidebar for org:', organizationId)
+      try {
+        await SidebarService.initializeDefaultSidebar(organizationId)
+        console.log('✅ SidebarService.initializeDefaultSidebar completed successfully')
+      } catch (initError) {
+        console.error('❌ SidebarService.initializeDefaultSidebar failed:')
+        console.error('- Error message:', (initError as any)?.message)
+        console.error('- Full error:', initError)
+        console.warn('⚠️ Failed to initialize default sidebar, continuing with existing data:', initError)
+      }
+
+      // Load the dynamic configuration
+      const dynamicConfig = await SidebarService.getDynamicSidebarConfig(organizationId)
+      console.log('📊 Dynamic config loaded:', dynamicConfig)
+      setDynamicConfig(dynamicConfig)
 
       // Convert to sidebar sections format
       const dynamicSections: SidebarSection[] = [
@@ -331,35 +349,37 @@ export default function Sidebar({
         }
       ]
 
-      // Add each category as a section
-      Object.entries(sidebarData).forEach(([categoryKey, category]) => {
+      // Group items by category
+      const itemsByCategory = new Map<string, DBSidebarItem[]>()
+      dynamicConfig.items.forEach(item => {
+        const categoryId = item.category_id || 'uncategorized'
+        if (!itemsByCategory.has(categoryId)) {
+          itemsByCategory.set(categoryId, [])
+        }
+        itemsByCategory.get(categoryId)!.push(item)
+      })
+
+      // Create sections from categories
+      dynamicConfig.categories.forEach(category => {
+        const categoryItems = itemsByCategory.get(category.id) || []
+
         const section: SidebarSection = {
-          id: categoryKey.toLowerCase().replace(/\s+/g, '-'),
-          title: category.name,
-          isCollapsible: true,
-          isExpanded: true,
+          id: category.category_key,
+          title: category.category_name,
+          isCollapsible: category.is_collapsible,
+          isExpanded: category.is_expanded,
           items: []
         }
 
-        // Add system items first
-        category.systemItems.forEach((systemItem, index) => {
+        // Add items to section
+        categoryItems.forEach(item => {
+          const count = dynamicConfig.counts?.[item.item_key]
           section.items.push({
-            id: `${categoryKey}-system-${index}`,
-            label: systemItem.name,
-            icon: getIconComponent(systemItem.icon),
-            href: systemItem.href,
-            count: systemItem.count
-          })
-        })
-
-        // Add custom items
-        category.items.forEach((customItem) => {
-          console.log('➕ Adding custom sidebar item:', customItem)
-          section.items.push({
-            id: customItem.id,
-            label: customItem.item_name,
-            icon: getIconComponent(customItem.icon),
-            href: `/${customItem.item_slug}`
+            id: item.id,
+            label: item.item_label,
+            icon: getIconComponent(item.icon_name),
+            href: item.item_href || `/${item.item_key}`,
+            count: count
           })
         })
 
@@ -368,14 +388,62 @@ export default function Sidebar({
         }
       })
 
-      console.log('✅ Final sidebar sections:', dynamicSections)
+      console.log('✅ Final dynamic sidebar sections:', dynamicSections)
       setSidebarConfig(dynamicSections)
       setIsInitialized(true)
     } catch (error) {
       console.error('❌ Error loading dynamic sidebar:', error)
-      // Fall back to default config
-      setSidebarConfig(config)
-      setIsInitialized(true)
+      // Fall back to legacy method
+      try {
+        const sidebarData = await SidebarService.getOrganizationSidebarByCategory(organizationId)
+        console.log('📊 Fallback to legacy sidebar data:', sidebarData)
+
+        // Convert legacy format (existing code)
+        const dynamicSections: SidebarSection[] = [
+          {
+            id: 'main',
+            items: [
+              {
+                id: 'home',
+                label: 'Home',
+                icon: Home,
+                href: '/'
+              }
+            ]
+          }
+        ]
+
+        Object.entries(sidebarData).forEach(([categoryKey, category]) => {
+          const section: SidebarSection = {
+            id: categoryKey.toLowerCase().replace(/\s+/g, '-'),
+            title: category.name,
+            isCollapsible: true,
+            isExpanded: true,
+            items: []
+          }
+
+          category.systemItems.forEach((systemItem, index) => {
+            section.items.push({
+              id: `${categoryKey}-system-${index}`,
+              label: systemItem.name,
+              icon: getIconComponent(systemItem.icon),
+              href: systemItem.href,
+              count: systemItem.count
+            })
+          })
+
+          if (section.items.length > 0) {
+            dynamicSections.push(section)
+          }
+        })
+
+        setSidebarConfig(dynamicSections)
+        setIsInitialized(true)
+      } catch (fallbackError) {
+        console.error('❌ Fallback also failed:', fallbackError)
+        setSidebarConfig(config)
+        setIsInitialized(true)
+      }
     } finally {
       setLoading(false)
     }
@@ -487,6 +555,17 @@ export default function Sidebar({
             Q
           </kbd>
         </button>
+
+        {/* Customize Sidebar Button */}
+        {currentOrgId && (
+          <button
+            onClick={() => setShowEditor(true)}
+            className="w-full mt-2 flex items-center space-x-2 px-3 py-2 text-xs text-gray-400 hover:text-gray-300 hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <Settings className="w-3 h-3" />
+            <span>Customize Sidebar</span>
+          </button>
+        )}
       </div>
 
       <div className="py-4">
@@ -528,6 +607,18 @@ export default function Sidebar({
           ))
         )}
       </div>
+
+      {/* Sidebar Editor Modal */}
+      {showEditor && currentOrgId && (
+        <SidebarEditor
+          organizationId={currentOrgId}
+          onClose={() => setShowEditor(false)}
+          onSave={() => {
+            // Reload sidebar after saving
+            loadDynamicSidebar(currentOrgId)
+          }}
+        />
+      )}
     </div>
   )
 }

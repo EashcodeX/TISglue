@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { supabase, type Organization } from '@/lib/supabase'
+import { supabase, type Organization, type SiteSummary } from '@/lib/supabase'
 import { useClient } from '@/contexts/ClientContext'
 import Sidebar from '@/components/Sidebar'
 import Header from '@/components/Header'
@@ -20,6 +20,7 @@ export default function SiteSummaryPage() {
   const { selectedClient } = useClient()
   const [loading, setLoading] = useState(true)
   const [organization, setOrganization] = useState<Organization | null>(null)
+  const [siteSummary, setSiteSummary] = useState<SiteSummary | null>(null)
 
   useEffect(() => {
     if (params.id) {
@@ -30,14 +31,30 @@ export default function SiteSummaryPage() {
   const fetchOrganization = async (id: string) => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
+
+      // Fetch organization data
+      const { data: orgData, error: orgError } = await supabase
         .from('organizations')
         .select('*')
         .eq('id', id)
         .single()
 
-      if (error) throw error
-      setOrganization(data)
+      if (orgError) throw orgError
+      setOrganization(orgData)
+
+      // Fetch site summary data
+      const { data: siteSummaryData, error: siteSummaryError } = await supabase
+        .from('site_summaries')
+        .select('*')
+        .eq('organization_id', id)
+        .single()
+
+      if (siteSummaryError && siteSummaryError.code !== 'PGRST116') {
+        // PGRST116 is "not found" error, which is okay for new organizations
+        console.error('Error fetching site summary:', siteSummaryError)
+      } else if (siteSummaryData) {
+        setSiteSummary(siteSummaryData)
+      }
     } catch (err) {
       console.error('Error fetching organization:', err)
     } finally {
@@ -149,11 +166,11 @@ export default function SiteSummaryPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-400 mb-1">Time Zone</label>
-                      <div className="text-white">EST</div>
+                      <div className="text-white">{siteSummary?.time_zone || 'EST'}</div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-400 mb-1">Hours of Operation</label>
-                      <div className="text-white">9-5</div>
+                      <div className="text-white">{siteSummary?.hours_of_operation || '9-5'}</div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-400 mb-1">Location</label>
@@ -168,15 +185,15 @@ export default function SiteSummaryPage() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-400 mb-1">Primary Contact</label>
-                      <div className="text-white">Namby Vithanarachchi</div>
+                      <div className="text-white">{siteSummary?.primary_contact || 'Not specified'}</div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-400 mb-1">Secondary Contact</label>
-                      <div className="text-white">Nick Melati</div>
+                      <div className="text-white">{siteSummary?.secondary_contact || 'Not specified'}</div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-400 mb-1">Emergency Contact</label>
-                      <div className="text-white">Nick Melati</div>
+                      <div className="text-white">{siteSummary?.emergency_contact || 'Not specified'}</div>
                     </div>
                   </div>
                 </div>
@@ -188,7 +205,7 @@ export default function SiteSummaryPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-400 mb-1">After Hours Access</label>
                       <div className="text-white">
-                        In the event that access is required after hours, please contact our primary contact to inform them of the issue and request further instruction.
+                        {siteSummary?.after_hours_access_instructions || 'In the event that access is required after hours, please contact our primary contact to inform them of the issue and request further instruction.'}
                       </div>
                     </div>
                   </div>

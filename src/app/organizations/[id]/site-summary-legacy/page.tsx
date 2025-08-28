@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { supabase, type Organization } from '@/lib/supabase'
+import { supabase, type Organization, type SiteSummaryLegacy } from '@/lib/supabase'
 import { useClient } from '@/contexts/ClientContext'
 import Sidebar from '@/components/Sidebar'
 import Header from '@/components/Header'
@@ -32,6 +32,7 @@ export default function SiteSummaryLegacyPage() {
   const { selectedClient } = useClient()
   const [loading, setLoading] = useState(true)
   const [organization, setOrganization] = useState<Organization | null>(null)
+  const [legacySummary, setLegacySummary] = useState<SiteSummaryLegacy | null>(null)
 
   useEffect(() => {
     if (params.id) {
@@ -42,16 +43,32 @@ export default function SiteSummaryLegacyPage() {
   const fetchOrganization = async (id: string) => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
+
+      // Fetch organization data
+      const { data: orgData, error: orgError } = await supabase
         .from('organizations')
         .select('*')
         .eq('id', id)
         .single()
 
-      if (error) throw error
-      setOrganization(data)
+      if (orgError) throw orgError
+      setOrganization(orgData)
+
+      // Fetch legacy site summary data
+      const { data: legacyData, error: legacyError } = await supabase
+        .from('site_summaries_legacy')
+        .select('*')
+        .eq('organization_id', id)
+        .single()
+
+      if (legacyError && legacyError.code !== 'PGRST116') {
+        // PGRST116 is "not found" error, which is okay for new organizations
+        console.error('Error fetching legacy site summary:', legacyError)
+      } else if (legacyData) {
+        setLegacySummary(legacyData)
+      }
     } catch (err) {
-      console.error('Error fetching organization:', err)
+      console.error('Error fetching data:', err)
     } finally {
       setLoading(false)
     }
@@ -99,11 +116,11 @@ export default function SiteSummaryLegacyPage() {
           <div className="p-6">
             {/* Breadcrumb */}
             <div className="flex items-center space-x-2 text-sm text-gray-400 mb-4">
-              <span>Con-Elco Ltd</span>
+              <span>{organization?.name || 'Organization'}</span>
               <span>/</span>
               <span>Site Summary (Legacy)</span>
               <span>/</span>
-              <span className="text-white">Con Elco</span>
+              <span className="text-white">{legacySummary?.title || organization?.name || 'Site Summary'}</span>
             </div>
 
             {/* Page Header */}
@@ -113,19 +130,19 @@ export default function SiteSummaryLegacyPage() {
                   <Building2 className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-semibold">Con Elco</h1>
+                  <h1 className="text-2xl font-semibold">{legacySummary?.title || organization?.name || 'Site Summary'}</h1>
                   <div className="text-sm text-gray-400">
                     Site Summary (Legacy)
                   </div>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <button 
-                  onClick={() => router.push(`/organizations/${params.id}/edit`)}
+                <button
+                  onClick={() => router.push(`/organizations/${params.id}/site-summary-legacy/edit`)}
                   className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm"
                 >
                   <Edit className="w-4 h-4" />
-                  <span>Edit</span>
+                  <span>Edit Site Summary (Legacy)</span>
                 </button>
                 <button className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm">
                   <FileText className="w-4 h-4" />
@@ -180,7 +197,7 @@ export default function SiteSummaryLegacyPage() {
                 {/* Title Section */}
                 <div className="bg-gray-800 rounded-lg p-6">
                   <h2 className="text-lg font-medium mb-4">Title</h2>
-                  <div className="text-white">{organization?.name || 'Con Elco'}</div>
+                  <div className="text-white">{legacySummary?.title || organization?.name || 'No title specified'}</div>
                 </div>
 
                 {/* Client Contacts Section */}
@@ -191,60 +208,59 @@ export default function SiteSummaryLegacyPage() {
                   <div className="mb-6">
                     <h3 className="text-md font-medium text-blue-400 mb-3">Location</h3>
                     <div className="space-y-2 text-sm">
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        <span>Con-Elco Ltd</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        <span>Con-Elco Ltd - Allentown Lighting Product (117979 Ontario Inc.)</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        <span>Con-Elco Ltd - Fallowes Electrical Consultants Ltd</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        <span>Con-Elco Ltd - Fibre-Optic Network Infrastructure Inc.</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        <span>Con-Elco Ltd - Specialty Utility Construction Inc. (SUCI)</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        <span>Con-Elco Ltd - Main Office</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        <span>Fallowes Electrical Consultants</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        <span>Fibre-Optic Network Infrastructure Inc.</span>
-                      </div>
+                      {legacySummary?.locations && legacySummary.locations.length > 0 ? (
+                        legacySummary.locations.map((location, index) => (
+                          <div key={index} className="flex items-center space-x-2">
+                            <MapPin className="w-4 h-4 text-gray-400" />
+                            <span>{location}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="flex items-center space-x-2 text-gray-500">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <span>No locations specified</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   {/* Primary Contact */}
                   <div className="mb-6">
                     <h3 className="text-md font-medium text-blue-400 mb-3">Primary Contact</h3>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <User className="w-4 h-4 text-gray-400" />
-                      <span>Linda Shan</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm mt-1">
-                      <User className="w-4 h-4 text-gray-400" />
-                      <span>Nick Melati</span>
+                    <div className="space-y-1">
+                      {legacySummary?.primary_contacts && legacySummary.primary_contacts.length > 0 ? (
+                        legacySummary.primary_contacts.map((contact, index) => (
+                          <div key={index} className="flex items-center space-x-2 text-sm">
+                            <User className="w-4 h-4 text-gray-400" />
+                            <span>{contact}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="flex items-center space-x-2 text-sm text-gray-500">
+                          <User className="w-4 h-4 text-gray-400" />
+                          <span>No primary contacts specified</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {/* Emergency Contact #1 */}
+                  {/* Emergency Contact */}
                   <div className="mb-6">
                     <h3 className="text-md font-medium text-blue-400 mb-3">Emergency Contact #1</h3>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <AlertTriangle className="w-4 h-4 text-red-400" />
-                      <span>Nick Melati</span>
+                    <div className="space-y-1">
+                      {legacySummary?.emergency_contacts && legacySummary.emergency_contacts.length > 0 ? (
+                        legacySummary.emergency_contacts.map((contact, index) => (
+                          <div key={index} className="flex items-center space-x-2 text-sm">
+                            <AlertTriangle className="w-4 h-4 text-red-400" />
+                            <span>{contact}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="flex items-center space-x-2 text-sm text-gray-500">
+                          <AlertTriangle className="w-4 h-4 text-red-400" />
+                          <span>No emergency contacts specified</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -253,12 +269,25 @@ export default function SiteSummaryLegacyPage() {
                 <div className="bg-gray-800 rounded-lg p-6">
                   <h2 className="text-lg font-medium mb-4">Initial Onboarding Details</h2>
                   <div className="text-sm text-gray-300">
-                    <p className="mb-4">
-                      Show who has access to this Site Summary (Legacy) 
-                      <button className="text-blue-400 hover:text-blue-300 ml-1">
-                        <span className="underline">link</span>
-                      </button>
-                    </p>
+                    {legacySummary?.onboarding_details ? (
+                      <p className="mb-4">{legacySummary.onboarding_details}</p>
+                    ) : (
+                      <p className="mb-4 text-gray-500">No onboarding details specified</p>
+                    )}
+
+                    {legacySummary?.access_permissions && legacySummary.access_permissions.length > 0 && (
+                      <div className="mt-4">
+                        <h3 className="text-sm font-medium text-blue-400 mb-2">Access Permissions:</h3>
+                        <div className="space-y-1">
+                          {legacySummary.access_permissions.map((user, index) => (
+                            <div key={index} className="flex items-center space-x-2">
+                              <User className="w-3 h-3 text-gray-400" />
+                              <span className="text-xs">{user}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

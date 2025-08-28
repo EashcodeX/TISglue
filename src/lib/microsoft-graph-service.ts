@@ -171,21 +171,21 @@ export class MicrosoftGraphService {
     try {
       console.log('📥 Downloading file from OneDrive:', fileId)
 
-      const response = await this.client
-        .api(`/me/drive/items/${fileId}/content`)
-        .get()
+      const response = await fetch(`${this.baseUrl}/me/drive/items/${fileId}/content`, {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      })
 
-      if (response instanceof ArrayBuffer) {
-        return new Blob([response])
-      } else if (response instanceof Blob) {
-        return response
-      } else {
-        throw new Error('Unexpected response type from OneDrive API')
+      if (!response.ok) {
+        throw new Error(`Failed to download file: ${response.status}`)
       }
+
+      return await response.blob()
 
     } catch (error) {
       console.error('❌ Error downloading file:', error)
-      throw new Error(`Failed to download file: ${error.message}`)
+      throw new Error(`Failed to download file: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 

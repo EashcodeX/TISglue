@@ -7,6 +7,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import GlobalSearchProvider from "@/components/GlobalSearchProvider";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import PWAProvider from "@/components/PWAProvider";
+import AuthGate from "@/components/AuthGate";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -66,7 +67,9 @@ export default function RootLayout({
               <AuthProvider>
                 <ClientProvider>
                   <GlobalSearchProvider>
-                    {children}
+                    <AuthGate>
+                      {children}
+                    </AuthGate>
                     <PWAInstallPrompt />
                   </GlobalSearchProvider>
                 </ClientProvider>

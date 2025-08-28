@@ -204,15 +204,9 @@ export default function OrganizationDetailPage() {
               </div>
               
               <div className="space-y-4">
-                {organization.name.toLowerCase().includes('con-elco') ? (
-                  <div className="bg-gray-700 rounded-lg p-4">
-                    <h3 className="font-medium text-red-400 mb-2">TISConnect</h3>
-                    <p className="text-sm text-gray-300 mb-2">
-                      Do not turn on ADSigner on Con-Elco PC - Client uses TISConnect in "Support Only" mode and turning ADSigner on will break their TISConnect functionality.
-                    </p>
-                    <p className="text-sm text-gray-300">
-                      Con-Elco uses TISConnect in "Support Only" mode and turning ADSigner on will break their TISConnect functionality.
-                    </p>
+                {organization.quick_notes && organization.quick_notes.trim().length > 0 ? (
+                  <div className="bg-gray-700 rounded-lg p-4 whitespace-pre-wrap text-gray-200">
+                    {organization.quick_notes}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-400">
@@ -297,19 +291,19 @@ export default function OrganizationDetailPage() {
               <div className="grid grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <span className="text-2xl font-bold text-white">207</span>
+                    <span className="text-2xl font-bold text-white">{organization.passed_count ?? 0}</span>
                   </div>
                   <p className="text-sm text-gray-400">Passed</p>
                 </div>
                 <div className="text-center">
                   <div className="w-16 h-16 bg-yellow-600 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <span className="text-2xl font-bold text-white">128</span>
+                    <span className="text-2xl font-bold text-white">{organization.not_viewed_count ?? 0}</span>
                   </div>
                   <p className="text-sm text-gray-400">Not Viewed</p>
                 </div>
                 <div className="text-center">
                   <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <span className="text-2xl font-bold text-white">0</span>
+                    <span className="text-2xl font-bold text-white">{organization.failed_count ?? 0}</span>
                   </div>
                   <p className="text-sm text-gray-400">Failed</p>
                 </div>

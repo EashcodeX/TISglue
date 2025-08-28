@@ -25,7 +25,7 @@ export default function Header({ currentPage, onMenuToggle }: HeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { selectedClient } = useClient()
-  const { user, signOut } = useAuth()
+  const { user, signOut, isSuperAdmin } = useAuth()
 
   const navigationItems = [
     { label: 'Dashboard', href: '/', isActive: pathname === '/' },
@@ -34,7 +34,8 @@ export default function Header({ currentPage, onMenuToggle }: HeaderProps) {
     { label: 'API Docs', href: '/api-docs', isActive: pathname === '/api-docs' },
     { label: 'Personal', href: '/personal', isActive: pathname === '/personal' },
     { label: 'Global', href: '/global', isActive: pathname === '/global' },
-    { label: 'GlueConnect', href: '/glueconnect', isActive: pathname === '/glueconnect' }
+    { label: 'GlueConnect', href: '/glueconnect', isActive: pathname === '/glueconnect' },
+    ...(isSuperAdmin ? [{ label: 'Admin', href: '/admin', isActive: pathname.startsWith('/admin') }] : [])
   ]
 
   const getInitials = useClientInitials

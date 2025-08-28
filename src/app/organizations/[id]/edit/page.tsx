@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { supabase, type Organization } from '@/lib/supabase'
+import { supabase, type Organization, type SiteSummary } from '@/lib/supabase'
 import { useClient } from '@/contexts/ClientContext'
 import Sidebar from '@/components/Sidebar'
 import Header from '@/components/Header'
@@ -36,6 +36,7 @@ export default function EditOrganizationPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [organization, setOrganization] = useState<Organization | null>(null)
+  const [siteSummary, setSiteSummary] = useState<SiteSummary | null>(null)
 
   useEffect(() => {
     if (params.id) {
@@ -46,14 +47,30 @@ export default function EditOrganizationPage() {
   const fetchOrganization = async (id: string) => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
+
+      // Fetch organization data
+      const { data: orgData, error: orgError } = await supabase
         .from('organizations')
         .select('*')
         .eq('id', id)
         .single()
 
-      if (error) throw error
-      setOrganization(data)
+      if (orgError) throw orgError
+      setOrganization(orgData)
+
+      // Fetch site summary data
+      const { data: siteSummaryData, error: siteSummaryError } = await supabase
+        .from('site_summaries')
+        .select('*')
+        .eq('organization_id', id)
+        .single()
+
+      if (siteSummaryError && siteSummaryError.code !== 'PGRST116') {
+        // PGRST116 is "not found" error, which is okay for new organizations
+        console.error('Error fetching site summary:', siteSummaryError)
+      } else if (siteSummaryData) {
+        setSiteSummary(siteSummaryData)
+      }
     } catch (err) {
       console.error('Error fetching organization:', err)
     } finally {
@@ -75,9 +92,13 @@ export default function EditOrganizationPage() {
         address: formData.address || formData.generalInfo?.address || '',
         city: formData.city || formData.generalInfo?.city || '',
         state: formData.state || formData.generalInfo?.state || '',
-        country: formData.country || formData.generalInfo?.country || 'Canada',
+        country: formData.country || formData.generalInfo?.country || '',
         postal_code: formData.postalCode || formData.generalInfo?.zipCode || '',
         timezone: formData.timeZone || 'EST',
+        quick_notes: formData.quickNotes || '',
+        passed_count: Number(formData.passedCount ?? 0),
+        not_viewed_count: Number(formData.notViewedCount ?? 0),
+        failed_count: Number(formData.failedCount ?? 0),
         updated_at: new Date().toISOString()
       }
 
@@ -89,6 +110,32 @@ export default function EditOrganizationPage() {
 
       if (orgError) {
         throw new Error(`Failed to update organization: ${orgError.message}`)
+      }
+
+      // Prepare site summary data
+      const siteSummaryData = {
+        organization_id: params.id as string,
+        primary_contact: formData.primaryContact || null,
+        secondary_contact: formData.secondaryContact || null,
+        emergency_contact: formData.emergencyContactSummary || null,
+        after_hours_access_instructions: formData.afterHoursAccessInstructions || 'In the event that access is required after hours, please contact our primary contact to inform them of the issue and request further instruction.',
+        time_zone: formData.timeZone || 'EST',
+        hours_of_operation: formData.hoursOfOperation || '9-5',
+        site_description: formData.siteSummaryLegacy?.description || null,
+        access_notes: formData.siteSummaryLegacy?.notes || null,
+        updated_at: new Date().toISOString()
+      }
+
+      // Upsert site summary data (insert or update)
+      const { error: siteSummaryError } = await supabase
+        .from('site_summaries')
+        .upsert(siteSummaryData, {
+          onConflict: 'organization_id',
+          ignoreDuplicates: false
+        })
+
+      if (siteSummaryError) {
+        throw new Error(`Failed to save site summary: ${siteSummaryError.message}`)
       }
 
       // Navigate back to view mode
@@ -182,8 +229,17 @@ export default function EditOrganizationPage() {
                 <OrganizationForm
                   initialData={{
                     title: organization?.name || '',
-                    timeZone: 'EST',
-                    hoursOfOperation: '9-5',
+                    timeZone: siteSummary?.time_zone || 'EST',
+                    hoursOfOperation: siteSummary?.hours_of_operation || '9-5',
+                    primaryContact: siteSummary?.primary_contact || '',
+                    secondaryContact: siteSummary?.secondary_contact || '',
+                    emergencyContactSummary: siteSummary?.emergency_contact || '',
+                    afterHoursAccessInstructions: siteSummary?.after_hours_access_instructions || 'In the event that access is required after hours, please contact our primary contact to inform them of the issue and request further instruction.',
+                    siteSummaryLegacy: {
+                      description: siteSummary?.site_description || '',
+                      notes: siteSummary?.access_notes || '',
+                      accessInstructions: ''
+                    },
                     contacts: [],
                     afterHourAccess: {
                       site: '',

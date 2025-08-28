@@ -1,399 +1,256 @@
-import { supabase } from './supabase'
+import { supabase, type SidebarCategory as DBSidebarCategory, type SidebarItem as DBSidebarItem, type SidebarConfig } from './supabase'
 
-export interface SidebarItem {
-  id: string
-  organization_id: string
-  parent_category?: string
-  item_name: string
-  item_slug: string
-  item_type: string
-  icon: string
-  description?: string
-  sort_order: number
-  is_active: boolean
-  is_system: boolean
-  created_at: string
-  updated_at: string
-}
-
-interface SystemSidebarItem {
-  name: string
-  href: string
-  icon: string
-  count?: number
-}
-
-export interface SidebarCategory {
-  name: string
-  items: SidebarItem[]
-  systemItems: SystemSidebarItem[]
-}
-
+// SidebarService: ensures every org has exactly 21 default items (6 + 15) in 2 categories
 export class SidebarService {
-  // Cache to store sidebar data temporarily
-  private static cache = new Map<string, { data: any, timestamp: number }>()
-  private static CACHE_DURATION = 30000 // 30 seconds
+  private static initLocks = new Map<string, Promise<void>>()
+  private static readonly LOCK_TIMEOUT_MS = 30_000
 
-  // Fetch real counts for sidebar items
-  static async getOrganizationCounts(organizationId: string): Promise<Record<string, number>> {
-    const cacheKey = `counts_${organizationId}`
-    const cached = this.cache.get(cacheKey)
-
-    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
-      console.log('📦 Using cached counts for organization:', organizationId)
-      return cached.data
+  // Public API used by Sidebar.tsx
+  static async initializeDefaultSidebar(organizationId: string): Promise<void> {
+    // Lock to prevent concurrent inits for the same org
+    const existing = this.initLocks.get(organizationId)
+    if (existing) {
+      await existing
+      return
     }
+    const p = this._initialize(organizationId)
+    this.initLocks.set(organizationId, p)
 
-    console.log('🔢 Fetching real counts for organization:', organizationId)
-
+    const clear = () => this.initLocks.delete(organizationId)
+    const timeout = setTimeout(clear, this.LOCK_TIMEOUT_MS)
     try {
-      const counts: Record<string, number> = {}
-
-      // Fetch contacts count
-      const { count: contactsCount, error: contactsError } = await supabase
-        .from('contacts')
-        .select('*', { count: 'exact', head: true })
-        .eq('organization_id', organizationId)
-
-      if (!contactsError) {
-        counts.contacts = contactsCount || 0
-      }
-
-      // Fetch locations count
-      const { count: locationsCount, error: locationsError } = await supabase
-        .from('locations')
-        .select('*', { count: 'exact', head: true })
-        .eq('organization_id', organizationId)
-
-      if (!locationsError) {
-        counts.locations = locationsCount || 0
-      }
-
-      // Fetch documents count (if table exists)
-      const { count: documentsCount, error: documentsError } = await supabase
-        .from('documents')
-        .select('*', { count: 'exact', head: true })
-        .eq('organization_id', organizationId)
-
-      if (!documentsError) {
-        counts.documents = documentsCount || 0
-      } else {
-        counts.documents = 0 // Table might not exist yet
-      }
-
-      // Fetch passwords count (if table exists)
-      const { count: passwordsCount, error: passwordsError } = await supabase
-        .from('passwords')
-        .select('*', { count: 'exact', head: true })
-        .eq('organization_id', organizationId)
-
-      if (!passwordsError) {
-        counts.passwords = passwordsCount || 0
-      } else {
-        counts.passwords = 0 // Table might not exist yet
-      }
-
-      // Fetch configurations count (if table exists)
-      const { count: configurationsCount, error: configurationsError } = await supabase
-        .from('configurations')
-        .select('*', { count: 'exact', head: true })
-        .eq('organization_id', organizationId)
-
-      if (!configurationsError) {
-        counts.configurations = configurationsCount || 0
-      } else {
-        counts.configurations = 0 // Table might not exist yet
-      }
-
-      // Fetch networks count (if table exists)
-      const { count: networksCount, error: networksError } = await supabase
-        .from('networks')
-        .select('*', { count: 'exact', head: true })
-        .eq('organization_id', organizationId)
-
-      if (!networksError) {
-        counts.networks = networksCount || 0
-      } else {
-        counts.networks = 0 // Table might not exist yet
-      }
-
-      // Fetch SSL certificates count (if table exists)
-      const { count: sslCount, error: sslError } = await supabase
-        .from('ssl_certificates')
-        .select('*', { count: 'exact', head: true })
-        .eq('organization_id', organizationId)
-
-      if (!sslError) {
-        counts.ssl_certificates = sslCount || 0
-      } else {
-        counts.ssl_certificates = 0 // Table might not exist yet
-      }
-
-      // Fetch domains count (if table exists)
-      const { count: domainsCount, error: domainsError } = await supabase
-        .from('domains')
-        .select('*', { count: 'exact', head: true })
-        .eq('organization_id', organizationId)
-
-      if (!domainsError) {
-        counts.domains = domainsCount || 0
-      } else {
-        counts.domains = 0 // Table might not exist yet
-      }
-
-      console.log('📊 Real counts fetched:', counts)
-
-      // Cache the results
-      this.cache.set(cacheKey, { data: counts, timestamp: Date.now() })
-
-      return counts
-
-    } catch (error) {
-      console.error('❌ Error fetching organization counts:', error)
-      return {} // Return empty object on error
+      await p
+    } finally {
+      clearTimeout(timeout)
+      clear()
     }
   }
 
-  // Clear cache for a specific organization
-  static clearCache(organizationId?: string) {
-    if (organizationId) {
-      console.log('🗑️ Clearing sidebar cache for organization:', organizationId)
-      this.cache.delete(`sidebar_${organizationId}`)
-      this.cache.delete(`items_${organizationId}`)
-      this.cache.delete(`counts_${organizationId}`)
-    } else {
-      console.log('🗑️ Clearing all sidebar cache')
-      this.cache.clear()
-    }
-  }
-
-  // Clear cache only when switching between different organizations
-  static clearCacheIfDifferentOrg(newOrgId: string) {
-    const currentCacheKeys = Array.from(this.cache.keys())
-    const hasDataForDifferentOrg = currentCacheKeys.some(key =>
-      key.includes('sidebar_') && !key.includes(newOrgId)
-    )
-
-    if (hasDataForDifferentOrg) {
-      console.log('🔄 Switching organizations, clearing cache for different org')
-      this.cache.clear()
-    }
-  }
-
-  // Get all sidebar items for an organization
-  static async getOrganizationSidebarItems(organizationId: string): Promise<SidebarItem[]> {
-    console.log('🔍 Fetching sidebar items for organization:', organizationId)
-
-    // Check cache first
-    const cacheKey = `items_${organizationId}`
-    const cached = this.cache.get(cacheKey)
-    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
-      console.log('📦 Using cached sidebar items for organization:', organizationId)
-      return cached.data
-    }
-
-    const { data, error } = await supabase
-      .from('organization_sidebar_items')
+  static async getDynamicSidebarConfig(organizationId: string): Promise<SidebarConfig> {
+    const { data: categories = [] } = await supabase
+      .from('sidebar_categories')
       .select('*')
       .eq('organization_id', organizationId)
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true })
+      .order('display_order', { ascending: true })
 
-    if (error) {
-      console.error('❌ Error fetching sidebar items:', error)
-      console.error('Error details:', JSON.stringify(error, null, 2))
-      throw error
-    }
+    const { data: items = [] } = await supabase
+      .from('sidebar_items')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .order('display_order', { ascending: true })
 
-    console.log('📋 Found sidebar items:', data)
-    const result = data || []
-
-    // Cache the result
-    this.cache.set(cacheKey, { data: result, timestamp: Date.now() })
-
-    return result
+    return { categories: categories as DBSidebarCategory[], items: items as DBSidebarItem[] }
   }
 
-  // Get sidebar items grouped by category - EXACT ITGlue structure from image
-  static async getOrganizationSidebarByCategory(organizationId: string): Promise<Record<string, SidebarCategory>> {
-    console.log('🏗️ Building sidebar categories for organization:', organizationId)
+  static clearCacheIfDifferentOrg(_organizationId: string): void {
+    // no-op placeholder to match existing Sidebar.tsx usage; caching removed in this simplified service
+  }
 
-    // Check cache first
-    const cacheKey = `sidebar_${organizationId}`
-    const cached = this.cache.get(cacheKey)
-    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
-      console.log('📦 Using cached sidebar categories for organization:', organizationId)
-      return cached.data
-    }
-
-    const items = await this.getOrganizationSidebarItems(organizationId)
-
-    // Get real counts for this organization
-    const counts = await this.getOrganizationCounts(organizationId)
-
-    // EXACT ITGlue sidebar structure from the provided image (with real counts)
-    const defaultSidebar = {
+  static async getOrganizationSidebarByCategory(_organizationId: string): Promise<any> {
+    // Fallback minimal structure (used only if DB calls fail)
+    return {
       'CLIENT CONTACT': {
         name: 'CLIENT CONTACT',
         items: [],
         systemItems: [
-          { name: 'Site Summary', href: '/site-summary', icon: 'FileText', count: 1 },
-          { name: 'Site Summary (Legacy)', href: '/site-summary-legacy', icon: 'Archive', count: 1 },
-          { name: 'After Hour and Building/Site...', href: '/after-hour-access', icon: 'Clock', count: 1 },
-          { name: 'Onsite Information', href: '/onsite-information', icon: 'AlertTriangle' },
-          { name: 'Locations', href: '/locations', icon: 'MapPin', count: counts.locations || 0 },
-          { name: 'Contacts', href: '/contacts', icon: 'Users', count: counts.contacts || 0 }
+          { name: 'Site Summary', href: '/site-summary', icon: 'FileText', count: 0 },
+          { name: 'Locations', href: '/locations', icon: 'MapPin', count: 0 },
+          { name: 'Contacts', href: '/contacts', icon: 'Users', count: 0 }
         ]
       },
       'CORE DOCUMENTATION': {
         name: 'CORE DOCUMENTATION',
         items: [],
         systemItems: [
-          { name: 'TIS Standards Exception', href: '/tis-standards-exception', icon: 'AlertTriangle' },
-          { name: 'TIS Contract Exceptions', href: '/tis-contract-exceptions', icon: 'FileX' },
-          { name: 'Request for Change Form (RFC)', href: '/rfc', icon: 'Clock' },
-          { name: 'Change Log', href: '/change-log', icon: 'FileText' },
-          { name: 'Configurations', href: '/configurations', icon: 'Settings', count: counts.configurations || 0 },
-          { name: 'Documents', href: '/documents', icon: 'FileText', count: counts.documents || 0 },
-          { name: 'Domains - Liongard', href: '/domains-liongard', icon: 'FileText', count: counts.domains || 0 },
-          { name: 'Domain Tracker', href: '/domain-tracker', icon: 'Globe', count: counts.domains || 0 },
-          { name: 'Known Issues', href: '/known-issues', icon: 'AlertTriangle', count: 0 },
-          { name: 'Maintenance Windows', href: '/maintenance-windows', icon: 'Zap' },
-          { name: 'Multi-Factor Authentication', href: '/mfa', icon: 'Shield', count: 0 },
-          { name: 'Networks', href: '/networks', icon: 'Network', count: counts.networks || 0 },
-          { name: 'Passwords', href: '/passwords', icon: 'Key', count: counts.passwords || 0 },
-          { name: 'SSL Tracker', href: '/ssl-tracker', icon: 'Lock', count: counts.ssl_certificates || 0 },
-          { name: 'TLS/SSL Certificate', href: '/tls-ssl-certificate', icon: 'Shield', count: counts.ssl_certificates || 0 }
+          { name: 'Configurations', href: '/configurations', icon: 'Settings', count: 0 },
+          { name: 'Documents', href: '/documents', icon: 'FileText', count: 0 },
+          { name: 'Passwords', href: '/passwords', icon: 'Key', count: 0 }
         ]
       }
     }
-
-    // Group custom items by parent category - they will appear AFTER system items
-    items.forEach(item => {
-      const category = item.parent_category || 'CLIENT CONTACT'
-
-      if (!defaultSidebar[category]) {
-        // If category doesn't exist, create it
-        defaultSidebar[category] = {
-          name: category,
-          items: [],
-          systemItems: []
-        }
-      }
-      defaultSidebar[category].items.push(item)
-    })
-
-    console.log('✅ Built sidebar categories for organization:', organizationId, defaultSidebar)
-
-    // Cache the result
-    this.cache.set(cacheKey, { data: defaultSidebar, timestamp: Date.now() })
-
-    return defaultSidebar
   }
 
-  // Create a new sidebar item
-  static async createSidebarItem(item: Omit<SidebarItem, 'id' | 'created_at' | 'updated_at'>): Promise<SidebarItem> {
-    console.log('Creating sidebar item with data:', item)
+  // Core logic: make sidebar exactly 21 default items in 2 categories
+  private static async _initialize(organizationId: string): Promise<void> {
+    // If already complete, exit fast
+    const { count: existingCount } = await supabase
+      .from('sidebar_items')
+      .select('*', { count: 'exact', head: true })
+      .eq('organization_id', organizationId)
+    if ((existingCount || 0) === 21) return
 
-    try {
-      const { data, error } = await supabase
-        .from('organization_sidebar_items')
-        .insert([item])
-        .select()
-        .single()
+    // Ensure categories exist (upsert) and capture their IDs
+    const defaultCategories = [
+      { organization_id: organizationId, category_key: 'client-contact', category_name: 'CLIENT CONTACT', display_order: 1, is_collapsible: true, is_expanded: true, is_visible: true, is_system: true },
+      { organization_id: organizationId, category_key: 'core-documentation', category_name: 'CORE DOCUMENTATION', display_order: 2, is_collapsible: true, is_expanded: true, is_visible: true, is_system: true }
+    ]
 
-      if (error) {
-        console.error('Supabase error creating sidebar item:', error)
+    await supabase
+      .from('sidebar_categories')
+      .upsert(defaultCategories, { onConflict: 'organization_id,category_key' })
 
-        // Check for common error types
-        if (error.code === '42P01') {
-          throw new Error('Database table "organization_sidebar_items" does not exist. Please run the database setup SQL first.')
-        } else if (error.code === '23505') {
-          throw new Error('A sidebar item with this slug already exists for this organization.')
-        } else if (error.message?.includes('timeout')) {
-          throw new Error('Database connection timeout. Please try again.')
-        } else {
-          throw new Error(`Database error: ${error.message || 'Unknown error'}`)
-        }
-      }
+    // Fetch categories and delete any non-default categories for this org
+    const { data: categories = [] } = await supabase
+      .from('sidebar_categories')
+      .select('id, category_key')
+      .eq('organization_id', organizationId)
+    const client = categories.find(c => c.category_key === 'client-contact')
+    const core = categories.find(c => c.category_key === 'core-documentation')
+    if (!client || !core) throw new Error('Required sidebar categories not found after upsert')
 
-      console.log('Successfully created sidebar item:', data)
+    const allowedCategoryIds = new Set([client.id, core.id])
+    const extraCategoryIds = categories.filter(c => !allowedCategoryIds.has(c.id)).map(c => c.id)
+    if (extraCategoryIds.length > 0) {
+      // Delete items under extra categories then delete categories
+      await supabase.from('sidebar_items').delete().in('category_id', extraCategoryIds)
+      await supabase.from('sidebar_categories').delete().in('id', extraCategoryIds)
+    }
 
-      // Clear cache for this organization to force refresh
-      this.clearCache(item.organization_id)
+    // Build 21 default items
+    const defaults = this._defaultItems(organizationId, client.id, core.id)
+    const defaultKeys = new Set(defaults.map(d => d.item_key))
 
-      return data
-    } catch (err) {
-      console.error('Error in createSidebarItem:', err)
-      throw err
+    // Delete any non-default items or items attached to unexpected categories
+    await supabase
+      .from('sidebar_items')
+      .delete()
+      .eq('organization_id', organizationId)
+      .not('item_key', 'in', `(${Array.from(defaultKeys).map(k => `'${k}'`).join(',')})`)
+
+    await supabase
+      .from('sidebar_items')
+      .delete()
+      .eq('organization_id', organizationId)
+      .not('category_id', 'in', `(${Array.from(allowedCategoryIds).map(id => `'${id}'`).join(',')})`)
+
+    // Upsert the 21 items (idempotent, race-safe)
+    await supabase
+      .from('sidebar_items')
+      .upsert(defaults, { onConflict: 'organization_id,item_key' })
+
+    // Final verification
+    const { count: finalCount } = await supabase
+      .from('sidebar_items')
+      .select('*', { count: 'exact', head: true })
+      .eq('organization_id', organizationId)
+    if ((finalCount || 0) !== 21) {
+      throw new Error(`Sidebar initialization incomplete. Expected 21, got ${finalCount}`)
     }
   }
 
-  // Update a sidebar item
-  static async updateSidebarItem(id: string, updates: Partial<SidebarItem>): Promise<SidebarItem> {
+  private static _defaultItems(orgId: string, clientCatId: string, coreCatId: string) {
+    return [
+      // CLIENT CONTACT (6)
+      { organization_id: orgId, category_id: clientCatId, item_key: 'site-summary', item_label: 'Site Summary', item_href: '/site-summary', icon_name: 'FileText', display_order: 1, is_visible: true, is_system: true, count_source: 'site_summaries' },
+      { organization_id: orgId, category_id: clientCatId, item_key: 'site-summary-legacy', item_label: 'Site Summary (Legacy)', item_href: '/site-summary-legacy', icon_name: 'Archive', display_order: 2, is_visible: true, is_system: true, count_source: 'site_summaries' },
+      { organization_id: orgId, category_id: clientCatId, item_key: 'after-hour-access', item_label: 'After Hour and Building/Site Access Instructions', item_href: '/after-hour-access', icon_name: 'Clock', display_order: 3, is_visible: true, is_system: true, count_source: 'site_summaries' },
+      { organization_id: orgId, category_id: clientCatId, item_key: 'onsite-information', item_label: 'Onsite Information', item_href: '/onsite-information', icon_name: 'AlertTriangle', display_order: 4, is_visible: true, is_system: true },
+      { organization_id: orgId, category_id: clientCatId, item_key: 'locations', item_label: 'Locations', item_href: '/locations', icon_name: 'MapPin', display_order: 5, is_visible: true, is_system: true, count_source: 'locations' },
+      { organization_id: orgId, category_id: clientCatId, item_key: 'contacts', item_label: 'Contacts', item_href: '/contacts', icon_name: 'Users', display_order: 6, is_visible: true, is_system: true, count_source: 'contacts' },
+      // CORE DOCUMENTATION (15)
+      { organization_id: orgId, category_id: coreCatId, item_key: 'tis-standards-exception', item_label: 'TIS Standards Exception', item_href: '/tis-standards-exception', icon_name: 'AlertTriangle', display_order: 1, is_visible: true, is_system: true },
+      { organization_id: orgId, category_id: coreCatId, item_key: 'tis-contract-exceptions', item_label: 'TIS Contract Exceptions', item_href: '/tis-contract-exceptions', icon_name: 'FileX', display_order: 2, is_visible: true, is_system: true },
+      { organization_id: orgId, category_id: coreCatId, item_key: 'request-change-form', item_label: 'Request for Change Form (RFC)', item_href: '/rfc', icon_name: 'Clock', display_order: 3, is_visible: true, is_system: true },
+      { organization_id: orgId, category_id: coreCatId, item_key: 'change-log', item_label: 'Change Log', item_href: '/change-log', icon_name: 'History', display_order: 4, is_visible: true, is_system: true },
+      { organization_id: orgId, category_id: coreCatId, item_key: 'configurations', item_label: 'Configurations', item_href: '/configurations', icon_name: 'Settings', display_order: 5, is_visible: true, is_system: true, count_source: 'configurations' },
+      { organization_id: orgId, category_id: coreCatId, item_key: 'documents', item_label: 'Documents', item_href: '/documents', icon_name: 'FileText', display_order: 6, is_visible: true, is_system: true, count_source: 'documents' },
+      { organization_id: orgId, category_id: coreCatId, item_key: 'domains-liongard', item_label: 'Domains - Liongard', item_href: '/domain-tracker', icon_name: 'Globe', display_order: 7, is_visible: true, is_system: true, count_source: 'domains' },
+      { organization_id: orgId, category_id: coreCatId, item_key: 'domain-tracker', item_label: 'Domain Tracker', item_href: '/domain-tracker', icon_name: 'Network', display_order: 8, is_visible: true, is_system: true, count_source: 'domains' },
+      { organization_id: orgId, category_id: coreCatId, item_key: 'known-issues', item_label: 'Known Issues', item_href: '/known-issues', icon_name: 'Bug', display_order: 9, is_visible: true, is_system: true, count_source: 'known_issues' },
+      { organization_id: orgId, category_id: coreCatId, item_key: 'maintenance-windows', item_label: 'Maintenance Windows', item_href: '/maintenance-windows', icon_name: 'Calendar', display_order: 10, is_visible: true, is_system: true },
+      { organization_id: orgId, category_id: coreCatId, item_key: 'multi-factor-authentication', item_label: 'Multi-Factor Authentication', item_href: '/multi-factor-authentication', icon_name: 'Shield', display_order: 11, is_visible: true, is_system: true, count_source: 'mfa_configs' },
+      { organization_id: orgId, category_id: coreCatId, item_key: 'networks', item_label: 'Networks', item_href: '/networks', icon_name: 'Wifi', display_order: 12, is_visible: true, is_system: true, count_source: 'networks' },
+      { organization_id: orgId, category_id: coreCatId, item_key: 'passwords', item_label: 'Passwords', item_href: '/passwords', icon_name: 'Key', display_order: 13, is_visible: true, is_system: true, count_source: 'passwords' },
+      { organization_id: orgId, category_id: coreCatId, item_key: 'ssl-tracker', item_label: 'SSL Tracker', item_href: '/ssl-tracker', icon_name: 'Lock', display_order: 14, is_visible: true, is_system: true, count_source: 'ssl_certificates' },
+      { organization_id: orgId, category_id: coreCatId, item_key: 'tls-ssl-certificate', item_label: 'TLS/SSL Certificate', item_href: '/tls-ssl-certificate', icon_name: 'Shield', display_order: 15, is_visible: true, is_system: true, count_source: 'ssl_certificates' }
+    ]
+  }
+
+  // Additional methods used by components
+  static async getOrganizationSidebarItems(organizationId: string): Promise<DBSidebarItem[]> {
+    const { data: items = [] } = await supabase
+      .from('sidebar_items')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .order('display_order', { ascending: true })
+
+    return items as DBSidebarItem[]
+  }
+
+  static async createSidebarItem(itemData: Partial<DBSidebarItem>): Promise<DBSidebarItem> {
     const { data, error } = await supabase
-      .from('organization_sidebar_items')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id)
+      .from('sidebar_items')
+      .insert(itemData)
       .select()
       .single()
 
-    if (error) {
-      console.error('Error updating sidebar item:', error)
-      throw error
-    }
-
-    return data
+    if (error) throw error
+    return data as DBSidebarItem
   }
 
-  // Delete a sidebar item
-  static async deleteSidebarItem(id: string): Promise<void> {
+  static async updateSidebarItem(itemId: string, updates: Partial<DBSidebarItem>): Promise<void> {
     const { error } = await supabase
-      .from('organization_sidebar_items')
-      .delete()
-      .eq('id', id)
+      .from('sidebar_items')
+      .update(updates)
+      .eq('id', itemId)
 
-    if (error) {
-      console.error('Error deleting sidebar item:', error)
-      throw error
+    if (error) throw error
+  }
+
+  static async deleteSidebarItem(itemId: string): Promise<void> {
+    const { error } = await supabase
+      .from('sidebar_items')
+      .delete()
+      .eq('id', itemId)
+
+    if (error) throw error
+  }
+
+  static async updateItemLabel(item: DBSidebarItem, newLabel: string): Promise<void> {
+    await this.updateSidebarItem(item.id, { item_label: newLabel })
+  }
+
+  static async updateCategoryName(categoryId: string, newName: string): Promise<void> {
+    const { error } = await supabase
+      .from('sidebar_categories')
+      .update({ category_name: newName })
+      .eq('id', categoryId)
+
+    if (error) throw error
+  }
+
+  static async toggleItemVisibility(itemId: string, isVisible: boolean): Promise<void> {
+    await this.updateSidebarItem(itemId, { is_visible: isVisible })
+  }
+
+  static async getOrganizationCounts(organizationId: string): Promise<any> {
+    // Return mock counts for now
+    return {
+      configurations: 0,
+      documents: 0,
+      domains: 0,
+      known_issues: 0,
+      passwords: 0,
+      networks: 0,
+      ssl_certificates: 0,
+      mfa_configs: 0
     }
   }
 
-  // Get available icons for sidebar items
-  static getAvailableIcons(): { value: string; label: string }[] {
-    return [
-      { value: 'FileText', label: 'Document' },
-      { value: 'Folder', label: 'Folder' },
-      { value: 'Users', label: 'Users' },
-      { value: 'Phone', label: 'Phone' },
-      { value: 'Mail', label: 'Email' },
-      { value: 'Settings', label: 'Settings' },
-      { value: 'Code', label: 'Code' },
-      { value: 'Database', label: 'Database' },
-      { value: 'Server', label: 'Server' },
-      { value: 'Network', label: 'Network' },
-      { value: 'Shield', label: 'Security' },
-      { value: 'Key', label: 'Key' },
-      { value: 'Lock', label: 'Lock' },
-      { value: 'Globe', label: 'Globe' },
-      { value: 'Calendar', label: 'Calendar' },
-      { value: 'Clock', label: 'Clock' },
-      { value: 'Bug', label: 'Bug' },
-      { value: 'AlertTriangle', label: 'Alert' },
-      { value: 'CheckCircle', label: 'Check' },
-      { value: 'Info', label: 'Info' },
-      { value: 'Star', label: 'Star' },
-      { value: 'Heart', label: 'Heart' },
-      { value: 'Bookmark', label: 'Bookmark' },
-      { value: 'Tag', label: 'Tag' }
-    ]
+  static clearCache(organizationId?: string): void {
+    // No-op for now
   }
 
-  // Get available parent categories - Exact ITGlue structure
-  static getAvailableCategories(): { value: string; label: string }[] {
-    return [
-      { value: 'CLIENT CONTACT', label: 'Client Contact' },
-      { value: 'CORE DOCUMENTATION', label: 'Core Documentation' }
-    ]
+  static getAvailableCategories(): string[] {
+    return ['Client Contact', 'Core Documentation']
+  }
+
+  static getAvailableIcons(): string[] {
+    return ['FileText', 'Users', 'Settings', 'Globe', 'Key', 'Shield', 'Network', 'Bug', 'Calendar', 'Lock']
   }
 }
+
+// Export types for use in components
+export type SidebarItem = DBSidebarItem
+export type SidebarCategory = DBSidebarCategory
+
