@@ -115,11 +115,11 @@ export default function OrganizationsPage() {
     <ResponsiveLayout currentPage="Organizations">
       <div>
         {/* Header Section */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <h1 className="text-2xl font-semibold">Organizations</h1>
           <button
             onClick={() => router.push('/organizations/new')}
-            className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm"
+            className="flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             <span>New</span>
@@ -136,14 +136,14 @@ export default function OrganizationsPage() {
               <h2 className="text-lg font-medium text-gray-300">RECENTS</h2>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4 mb-6">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3 sm:gap-4 mb-6">
               {recentOrgs.map((org) => (
                 <div
                   key={org.id}
                   className="flex flex-col items-center cursor-pointer group"
                   onClick={() => handleOrganizationSelect(org.id)}
                 >
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 group-hover:scale-105 transition-transform`} style={{ backgroundColor: getRandomColor(org.name) }}>
+                  <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mb-2 group-hover:scale-105 transition-transform`} style={{ backgroundColor: getRandomColor(org.name) }}>
                     <span className="text-white font-bold text-lg">
                       {getInitials(org.name)}
                     </span>
@@ -165,14 +165,14 @@ export default function OrganizationsPage() {
               <h2 className="text-lg font-medium text-gray-300">FAVORITES</h2>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4 mb-6">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3 sm:gap-4 mb-6">
               {favoriteOrgs.map((org) => (
                 <div
                   key={org.id}
                   className="flex flex-col items-center cursor-pointer group"
                   onClick={() => handleOrganizationSelect(org.id)}
                 >
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 group-hover:scale-105 transition-transform`} style={{ backgroundColor: getRandomColor(org.name) }}>
+                  <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mb-2 group-hover:scale-105 transition-transform`} style={{ backgroundColor: getRandomColor(org.name) }}>
                     <span className="text-white font-bold text-lg">
                       {getInitials(org.name)}
                     </span>
@@ -187,21 +187,21 @@ export default function OrganizationsPage() {
         )}
 
         {/* Search and View Controls */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4 gap-4">
           <div className="flex items-center space-x-4">
-            <div className="relative">
+            <div className="relative flex-1 lg:flex-none">
               <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Filter columns or Search keywords"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-gray-800 border border-gray-700 rounded px-10 py-2 text-sm text-white placeholder-gray-400 w-80"
+                className="bg-gray-800 border border-gray-700 rounded px-10 py-2 text-sm text-white placeholder-gray-400 w-full lg:w-80"
               />
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-between lg:justify-end space-x-2">
             <span className="text-sm text-gray-400">
               {filteredOrganizations.length} of {organizations.length} Results
             </span>
@@ -224,14 +224,14 @@ export default function OrganizationsPage() {
 
         {/* Organizations List */}
         {viewMode === 'grid' ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3 sm:gap-4">
             {filteredOrganizations.map((org) => (
               <div
                 key={org.id}
                 className="flex flex-col items-center cursor-pointer group"
                 onClick={() => handleOrganizationSelect(org.id)}
               >
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 group-hover:scale-105 transition-transform relative`} style={{ backgroundColor: getRandomColor(org.name) }}>
+                <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mb-2 group-hover:scale-105 transition-transform relative`} style={{ backgroundColor: getRandomColor(org.name) }}>
                   <span className="text-white font-bold text-lg">
                     {getInitials(org.name)}
                   </span>

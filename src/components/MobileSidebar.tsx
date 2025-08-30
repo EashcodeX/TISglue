@@ -54,7 +54,10 @@ export default function MobileSidebar({ isOpen, onClose, onItemClick }: MobileSi
 
   const handleNavClick = (href: string) => {
     onClose() // Close sidebar first
-    window.location.href = href // Navigate to the page
+    // Use Next.js router for better navigation
+    if (typeof window !== 'undefined') {
+      window.location.href = href
+    }
   }
 
   return (
@@ -62,8 +65,9 @@ export default function MobileSidebar({ isOpen, onClose, onItemClick }: MobileSi
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
           onClick={onClose}
+          aria-hidden="true"
         />
       )}
       
@@ -94,11 +98,10 @@ export default function MobileSidebar({ isOpen, onClose, onItemClick }: MobileSi
               {navigationItems.map((item) => {
                 const Icon = item.icon
                 return (
-                  <Link
+                  <button
                     key={item.label}
-                    href={item.href}
                     onClick={() => handleNavClick(item.href)}
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left ${
                       item.isActive
                         ? 'bg-blue-600 text-white'
                         : 'text-gray-300 hover:bg-gray-700 hover:text-white'
@@ -106,7 +109,7 @@ export default function MobileSidebar({ isOpen, onClose, onItemClick }: MobileSi
                   >
                     <Icon className="w-5 h-5" />
                     <span>{item.label}</span>
-                  </Link>
+                  </button>
                 )
               })}
             </div>

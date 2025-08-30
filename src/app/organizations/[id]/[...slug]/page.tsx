@@ -6,8 +6,7 @@ import { Edit, Save, X, FileText } from 'lucide-react'
 import { SidebarService } from '@/lib/sidebar-service'
 import { PageContentService } from '@/lib/page-content-service'
 import { supabase, type Organization } from '@/lib/supabase'
-import Sidebar from '@/components/Sidebar'
-import Header from '@/components/Header'
+import OrganizationLayout from '@/components/OrganizationLayout'
 import DynamicPageContent from '@/components/DynamicPageContent'
 
 interface SidebarItem {
@@ -166,44 +165,27 @@ export default function DynamicPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        <Header currentPage="Organizations" />
-        <div className="flex">
-          <Sidebar onItemClick={handleSidebarItemClick} />
-          <div className="flex-1 p-6">
-            <div className="flex items-center justify-center h-64">
-              <div className="text-gray-400">Loading page...</div>
-            </div>
-          </div>
+      <OrganizationLayout currentPage="Organizations" organizationId={params.id as string}>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-400">Loading page...</div>
         </div>
-      </div>
+      </OrganizationLayout>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        <Header currentPage="Organizations" />
-        <div className="flex">
-          <Sidebar onItemClick={handleSidebarItemClick} />
-          <div className="flex-1 p-6">
-            <div className="bg-red-900/20 border border-red-800 rounded-lg p-6">
-              <h1 className="text-xl font-semibold text-red-400 mb-2">Page Not Found</h1>
-              <p className="text-red-300">{error}</p>
-            </div>
-          </div>
+      <OrganizationLayout currentPage="Organizations" organizationId={params.id as string}>
+        <div className="bg-red-900/20 border border-red-800 rounded-lg p-6">
+          <h1 className="text-xl font-semibold text-red-400 mb-2">Page Not Found</h1>
+          <p className="text-red-300">{error}</p>
         </div>
-      </div>
+      </OrganizationLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <Header currentPage="Organizations" />
-      <div className="flex">
-        <Sidebar onItemClick={handleSidebarItemClick} />
-
-        <div className="flex-1 p-6">
+    <OrganizationLayout currentPage="Organizations" organizationId={params.id as string}>
           {/* Page Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
@@ -249,8 +231,6 @@ export default function DynamicPage() {
               />
             )}
           </div>
-        </div>
-      </div>
-    </div>
+    </OrganizationLayout>
   )
 }

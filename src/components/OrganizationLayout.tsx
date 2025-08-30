@@ -5,12 +5,13 @@ import Header from './Header'
 import Sidebar from './Sidebar'
 import MobileSidebar from './MobileSidebar'
 
-interface ResponsiveLayoutProps {
+interface OrganizationLayoutProps {
   children: React.ReactNode
   currentPage?: string
+  organizationId?: string
 }
 
-export default function ResponsiveLayout({ children, currentPage }: ResponsiveLayoutProps) {
+export default function OrganizationLayout({ children, currentPage, organizationId }: OrganizationLayoutProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   const handleSidebarItemClick = (item: any) => {
@@ -19,7 +20,14 @@ export default function ResponsiveLayout({ children, currentPage }: ResponsiveLa
       // Close mobile sidebar first
       setIsMobileSidebarOpen(false)
       // Use window.location for now to ensure navigation works
-      window.location.href = item.href
+      if (item.href === '/') {
+        window.location.href = '/'
+      } else if (organizationId) {
+        // For organization-specific routes, append the organization ID
+        window.location.href = `/organizations/${organizationId}${item.href}`
+      } else {
+        window.location.href = item.href
+      }
     }
   }
 
@@ -38,15 +46,17 @@ export default function ResponsiveLayout({ children, currentPage }: ResponsiveLa
         onMenuToggle={toggleMobileSidebar}
       />
       
-      <div className="flex h-[calc(100vh-64px)] layout-container">
-        {/* Desktop Sidebar - Hidden completely, using hamburger menu for all screen sizes */}
-        {/* <div className="hidden lg:block desktop-sidebar-container">
-          <div className="sidebar-content">
-            <Sidebar onItemClick={handleSidebarItemClick} />
+      <div className="flex h-[calc(100vh-64px)]">
+        {/* Desktop Sidebar - Show organization-specific sidebar on desktop */}
+        <div className="hidden lg:block w-64 flex-shrink-0">
+          <div className="h-full overflow-y-auto">
+            <Sidebar
+              onItemClick={handleSidebarItemClick}
+            />
           </div>
-        </div> */}
+        </div>
 
-        {/* Mobile Sidebar - Only show on mobile when open */}
+        {/* Mobile Sidebar - Show main navigation on mobile */}
         <MobileSidebar
           isOpen={isMobileSidebarOpen}
           onClose={closeMobileSidebar}
@@ -54,7 +64,7 @@ export default function ResponsiveLayout({ children, currentPage }: ResponsiveLa
         />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto main-content-area">
+        <main className="flex-1 overflow-y-auto">
           <div className="p-4 sm:p-6 lg:p-8">
             {children}
           </div>

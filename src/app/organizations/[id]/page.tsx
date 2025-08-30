@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase, type Organization } from '@/lib/supabase'
 import { useClient } from '@/contexts/ClientContext'
-import Sidebar from '@/components/Sidebar'
-import Header from '@/components/Header'
+import OrganizationLayout from '@/components/OrganizationLayout'
 import {
   Star,
   Edit,
@@ -78,45 +77,26 @@ export default function OrganizationDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        <Header currentPage="Organizations" />
-        <div className="flex">
-          <Sidebar onItemClick={handleSidebarItemClick} />
-          <div className="flex-1 p-6">
-            <div className="flex items-center justify-center h-64">
-              <div className="text-gray-400">Loading organization...</div>
-            </div>
-          </div>
+      <OrganizationLayout currentPage="Organizations" organizationId={params.id as string}>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-400">Loading organization...</div>
         </div>
-      </div>
+      </OrganizationLayout>
     )
   }
 
   if (error || !organization) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        <Header currentPage="Organizations" />
-        <div className="flex">
-          <Sidebar onItemClick={handleSidebarItemClick} />
-          <div className="flex-1 p-6">
-            <div className="flex items-center justify-center h-64">
-              <div className="text-red-400">{error || 'Organization not found'}</div>
-            </div>
-          </div>
+      <OrganizationLayout currentPage="Organizations" organizationId={params.id as string}>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-red-400">{error || 'Organization not found'}</div>
         </div>
-      </div>
+      </OrganizationLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <Header currentPage="Organizations" />
-      <div className="flex">
-        <Sidebar onItemClick={handleSidebarItemClick} />
-        
-        {/* Main Content */}
-        <div className="flex-1">
-          <div className="p-6">
+    <OrganizationLayout currentPage="Organizations" organizationId={params.id as string}>
             {/* Back Button */}
             <button
               onClick={handleBackToOrganizations}
@@ -127,59 +107,59 @@ export default function OrganizationDetailPage() {
             </button>
 
             {/* Organization Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-4">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
                   <Building2 className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-semibold">{organization.name}</h1>
-                  <div className="flex items-center space-x-4 text-sm text-gray-400">
+                  <h1 className="text-xl sm:text-2xl font-semibold">{organization.name}</h1>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-sm text-gray-400">
                     <span>Active Client</span>
-                    <span>•</span>
+                    <span className="hidden sm:inline">•</span>
                     <span>IT Support Only</span>
-                    <span>•</span>
+                    <span className="hidden sm:inline">•</span>
                     <span>Contact View</span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button className="p-2 text-gray-400 hover:text-white">
                   <Star className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => router.push(`/organizations/${params.id}/sidebar-management`)}
-                  className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm"
+                  className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm"
                   title="Manage Sidebar"
                 >
                   <Settings className="w-4 h-4" />
-                  <span>Sidebar</span>
+                  <span className="hidden sm:inline">Sidebar</span>
                 </button>
                 <button
                   onClick={() => router.push(`/organizations/${params.id}/edit`)}
-                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm"
+                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded text-sm"
                 >
                   <Edit className="w-4 h-4" />
-                  <span>Edit</span>
+                  <span className="hidden sm:inline">Edit</span>
                 </button>
-                <button className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm">
+                <button className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm">
                   <FileText className="w-4 h-4" />
-                  <span>PDF</span>
+                  <span className="hidden sm:inline">PDF</span>
                 </button>
-                <button className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm">
+                <button className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm">
                   <Plus className="w-4 h-4" />
-                  <span>Copy</span>
+                  <span className="hidden sm:inline">Copy</span>
                 </button>
-                <button className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">
+                <button className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 px-3 py-2 rounded text-sm">
                   <Trash2 className="w-4 h-4" />
-                  <span>Delete</span>
+                  <span className="hidden sm:inline">Delete</span>
                 </button>
                 <button
                   onClick={() => router.push('/organizations/new')}
-                  className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm"
+                  className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-3 py-2 rounded text-sm"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>New</span>
+                  <span className="hidden sm:inline">New</span>
                 </button>
               </div>
             </div>
@@ -218,9 +198,9 @@ export default function OrganizationDetailPage() {
             </div>
 
             {/* Organization Details */}
-            <div className="bg-gray-800 rounded-lg p-6 mb-6">
+            <div className="bg-gray-800 rounded-lg p-4 sm:p-6 mb-6">
               <h2 className="text-lg font-medium mb-4">Organization Details</h2>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   <h3 className="text-sm font-medium text-gray-400 mb-2">Contact Information</h3>
                   <div className="space-y-2 text-sm">
@@ -282,13 +262,13 @@ export default function OrganizationDetailPage() {
             )}
 
             {/* Documentation Health Summary */}
-            <div className="bg-gray-800 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
+            <div className="bg-gray-800 rounded-lg p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
                 <h2 className="text-lg font-medium">Documentation Health Summary</h2>
                 <span className="text-sm text-gray-400">Powered by Cooper Capital</span>
               </div>
-              
-              <div className="grid grid-cols-3 gap-6">
+
+              <div className="grid grid-cols-3 gap-4 sm:gap-6">
                 <div className="text-center">
                   <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-2">
                     <span className="text-2xl font-bold text-white">{organization.passed_count ?? 0}</span>
@@ -309,9 +289,6 @@ export default function OrganizationDetailPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </OrganizationLayout>
   )
 }

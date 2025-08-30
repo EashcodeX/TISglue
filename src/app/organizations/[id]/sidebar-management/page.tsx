@@ -5,8 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { SidebarService, type SidebarItem } from '@/lib/sidebar-service'
 import { PageContentService } from '@/lib/page-content-service'
 import { supabase, type Organization } from '@/lib/supabase'
-import Sidebar from '@/components/Sidebar'
-import Header from '@/components/Header'
+import OrganizationLayout from '@/components/OrganizationLayout'
 import DeleteConfirmation from '@/components/DeleteConfirmation'
 import {
   Plus,
@@ -194,27 +193,16 @@ export default function SidebarManagementPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        <Header currentPage="Organizations" />
-        <div className="flex">
-          <Sidebar onItemClick={handleSidebarItemClick} />
-          <div className="flex-1 p-6">
-            <div className="flex items-center justify-center h-64">
-              <div className="text-gray-400">Loading sidebar management...</div>
-            </div>
-          </div>
+      <OrganizationLayout currentPage="Organizations" organizationId={params.id as string}>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-400">Loading sidebar management...</div>
         </div>
-      </div>
+      </OrganizationLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <Header currentPage="Organizations" />
-      <div className="flex">
-        <Sidebar onItemClick={handleSidebarItemClick} />
-        
-        <div className="flex-1 p-6">
+    <OrganizationLayout currentPage="Organizations" organizationId={params.id as string}>
           {/* Page Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
@@ -322,8 +310,6 @@ export default function SidebarManagementPage() {
               </table>
             </div>
           </div>
-        </div>
-      </div>
 
       {/* Add/Edit Form Modal */}
       {showForm && (
@@ -482,6 +468,6 @@ export default function SidebarManagementPage() {
         message="Are you sure you want to delete this sidebar item? This action cannot be undone."
         itemName={deleteConfirmation.item?.item_name}
       />
-    </div>
+    </OrganizationLayout>
   )
 }
