@@ -76,9 +76,20 @@ export function useClientInitials(name: string) {
 // Hook to get client color
 export function useClientColor(name: string) {
   const colors = [
-    'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-red-500', 
-    'bg-yellow-500', 'bg-indigo-500', 'bg-pink-500', 'bg-gray-500'
+    'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-red-500',
+    'bg-yellow-500', 'bg-indigo-500', 'bg-pink-500', 'bg-teal-500',
+    'bg-orange-500', 'bg-cyan-500', 'bg-lime-500', 'bg-rose-500',
+    'bg-violet-500', 'bg-amber-500', 'bg-emerald-500', 'bg-sky-500'
   ]
-  const index = name.length % colors.length
+
+  // Create a simple hash from the name for better color distribution
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    const char = name.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // Convert to 32-bit integer
+  }
+
+  const index = Math.abs(hash) % colors.length
   return colors[index]
 }
