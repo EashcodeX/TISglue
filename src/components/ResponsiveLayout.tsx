@@ -14,8 +14,11 @@ export default function ResponsiveLayout({ children, currentPage }: ResponsiveLa
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   const handleSidebarItemClick = (item: any) => {
-    // Handle navigation - this will be passed to both sidebars
+    // Handle navigation - use Next.js router for better performance
     if (item.href) {
+      // Close mobile sidebar first
+      setIsMobileSidebarOpen(false)
+      // Use window.location for now to ensure navigation works
       window.location.href = item.href
     }
   }
@@ -48,7 +51,7 @@ export default function ResponsiveLayout({ children, currentPage }: ResponsiveLa
         
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto">
-          <div className="p-4 sm:p-6">
+          <div className="p-3 sm:p-4 lg:p-6">
             {children}
           </div>
         </main>

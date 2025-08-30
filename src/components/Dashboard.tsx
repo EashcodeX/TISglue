@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, type DashboardStats, type Favorite } from '@/lib/supabase'
 import { DashboardService, type DashboardData, type RecentActivity, type Alert } from '@/lib/dashboard-service'
-import Header from '@/components/Header'
+import ResponsiveLayout from '@/components/ResponsiveLayout'
 import SyncAll from '@/components/SyncAll'
 import { type SyncResult } from '@/lib/sync-service'
 import {
@@ -139,38 +139,30 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        <Header currentPage="Dashboard" />
-        <div className="p-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-gray-400">Loading dashboard...</div>
-          </div>
+      <ResponsiveLayout currentPage="Dashboard">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-400">Loading dashboard...</div>
         </div>
-      </div>
+      </ResponsiveLayout>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        <Header currentPage="Dashboard" />
-        <div className="p-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-red-400">{error}</div>
-          </div>
+      <ResponsiveLayout currentPage="Dashboard">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-red-400">{error}</div>
         </div>
-      </div>
+      </ResponsiveLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <Header currentPage="Dashboard" />
-
-      <div className="p-6">
+    <ResponsiveLayout currentPage="Dashboard">
+      <div>
         <h1 className="text-2xl font-semibold mb-6">Dashboard</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
           {/* Favorites Section */}
           <div className="lg:col-span-2">
             <div className="bg-gray-800 rounded-lg p-6">
@@ -183,9 +175,9 @@ export default function Dashboard() {
                   {dashboardData?.favorites.length || 0} items
                 </span>
               </div>
-              <div className="grid grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                 {dashboardData?.favorites.length === 0 ? (
-                  <div className="col-span-5 text-center py-8 text-gray-400">
+                  <div className="col-span-full text-center py-8 text-gray-400">
                     <Star className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p>No favorites yet</p>
                     <p className="text-sm">Click the star icon on any item to add it to favorites</p>
@@ -262,7 +254,7 @@ export default function Dashboard() {
                 <TrendingUp className="w-5 h-5 text-blue-500 mr-2" />
                 <h2 className="text-lg font-medium">System Overview</h2>
               </div>
-              <div className="grid grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
                 {getStatItems().map((item, index) => (
                   <div key={index} className="text-center p-3 bg-gray-700 rounded-lg">
                     <div className="flex items-center justify-center mb-2">
@@ -279,7 +271,7 @@ export default function Dashboard() {
               {/* Alerts Section */}
               <div className="border-t border-gray-700 pt-4">
                 <h3 className="text-sm font-medium text-gray-300 mb-3">System Alerts</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {getAlertItems().map((item, index) => (
                     <div key={index} className="flex items-center space-x-3 p-2 bg-gray-700 rounded">
                       <item.icon className={`w-4 h-4 ${item.color}`} />
@@ -371,6 +363,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-    </div>
+    </ResponsiveLayout>
   )
 }

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase, type Organization } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useClient, useClientInitials, useClientColor } from '@/contexts/ClientContext'
-import Header from '@/components/Header'
+import ResponsiveLayout from '@/components/ResponsiveLayout'
 import {
   Star,
   Plus,
@@ -93,35 +93,27 @@ export default function OrganizationsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        <Header currentPage="Organizations" />
-        <div className="p-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-gray-400">Loading organizations...</div>
-          </div>
+      <ResponsiveLayout currentPage="Organizations">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-400">Loading organizations...</div>
         </div>
-      </div>
+      </ResponsiveLayout>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        <Header currentPage="Organizations" />
-        <div className="p-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-red-400">{error}</div>
-          </div>
+      <ResponsiveLayout currentPage="Organizations">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-red-400">{error}</div>
         </div>
-      </div>
+      </ResponsiveLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <Header currentPage="Organizations" />
-
-      <div className="p-6">
+    <ResponsiveLayout currentPage="Organizations">
+      <div>
         {/* Header Section */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-semibold">Organizations</h1>
@@ -144,7 +136,7 @@ export default function OrganizationsPage() {
               <h2 className="text-lg font-medium text-gray-300">RECENTS</h2>
             </div>
 
-            <div className="grid grid-cols-8 gap-4 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4 mb-6">
               {recentOrgs.map((org) => (
                 <div
                   key={org.id}
@@ -173,7 +165,7 @@ export default function OrganizationsPage() {
               <h2 className="text-lg font-medium text-gray-300">FAVORITES</h2>
             </div>
 
-            <div className="grid grid-cols-8 gap-4 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4 mb-6">
               {favoriteOrgs.map((org) => (
                 <div
                   key={org.id}
@@ -232,7 +224,7 @@ export default function OrganizationsPage() {
 
         {/* Organizations List */}
         {viewMode === 'grid' ? (
-          <div className="grid grid-cols-8 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4">
             {filteredOrganizations.map((org) => (
               <div
                 key={org.id}
@@ -318,6 +310,6 @@ export default function OrganizationsPage() {
           </div>
         )}
       </div>
-    </div>
+    </ResponsiveLayout>
   )
 }

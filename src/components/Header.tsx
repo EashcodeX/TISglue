@@ -48,9 +48,11 @@ export default function Header({ currentPage, onMenuToggle }: HeaderProps) {
           {/* Mobile Menu Button */}
           <button
             onClick={onMenuToggle}
-            className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors"
+            className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors touch-manipulation"
+            aria-label="Toggle mobile menu"
+            type="button"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-6 h-6" />
           </button>
 
           {/* Logo */}

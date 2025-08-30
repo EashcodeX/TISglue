@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import Header from '@/components/Header'
-import Sidebar from '@/components/Sidebar'
+import ResponsiveLayout from '@/components/ResponsiveLayout'
 import {
   Globe,
   Building2,
@@ -174,13 +173,9 @@ export default function GlobalPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <Header currentPage="Global" />
-      <div className="flex">
-        <Sidebar onItemClick={handleSidebarItemClick} />
-
-        <div className="flex-1 p-6">
-          {/* Page Header */}
+    <ResponsiveLayout currentPage="Global">
+      <div>
+        {/* Page Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
@@ -207,7 +202,7 @@ export default function GlobalPage() {
 
           {/* Stats Cards */}
           {stats && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6">
               <div className="bg-gray-800 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -365,6 +360,6 @@ export default function GlobalPage() {
           </div>
         </div>
       </div>
-    </div>
+    </ResponsiveLayout>
   )
 }

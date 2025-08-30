@@ -48,8 +48,8 @@ export default function MobileSidebar({ isOpen, onClose, onItemClick }: MobileSi
       />
       
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 z-50 w-64 lg:hidden">
-        <div className="flex flex-col h-full bg-gray-800 border-r border-gray-700">
+      <div className="fixed inset-y-0 left-0 z-50 w-80 sm:w-64 lg:hidden transform transition-transform duration-300 ease-in-out">
+        <div className="flex flex-col h-full bg-gray-800 border-r border-gray-700 shadow-xl">
           {/* Header with close button */}
           <div className="flex items-center justify-between p-4 border-b border-gray-700">
             <div className="flex items-center space-x-2">

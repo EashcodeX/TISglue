@@ -8,6 +8,7 @@ import GlobalSearchProvider from "@/components/GlobalSearchProvider";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import PWAProvider from "@/components/PWAProvider";
 import AuthGate from "@/components/AuthGate";
+import MobileErrorHandler from "@/components/MobileErrorHandler";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,8 +25,6 @@ export const metadata: Metadata = {
   title: "ITGlue Clone - IT Documentation Platform",
   description: "Enterprise IT documentation and management platform with offline support",
   manifest: "/manifest.json",
-  themeColor: "#3B82F6",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -51,6 +50,17 @@ export const metadata: Metadata = {
   }
 };
 
+export function generateViewport() {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    themeColor: '#3B82F6',
+    viewportFit: 'cover'
+  }
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -67,10 +77,12 @@ export default function RootLayout({
               <AuthProvider>
                 <ClientProvider>
                   <GlobalSearchProvider>
-                    <AuthGate>
-                      {children}
-                    </AuthGate>
-                    <PWAInstallPrompt />
+                    <MobileErrorHandler>
+                      <AuthGate>
+                        {children}
+                      </AuthGate>
+                      <PWAInstallPrompt />
+                    </MobileErrorHandler>
                   </GlobalSearchProvider>
                 </ClientProvider>
               </AuthProvider>
