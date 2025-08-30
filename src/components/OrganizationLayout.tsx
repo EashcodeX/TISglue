@@ -80,7 +80,7 @@ export default function OrganizationLayout({ children, currentPage, organization
         currentPage={currentPage}
         onMenuToggle={toggleMobileSidebar}
         onOrgMenuToggle={toggleOrgMobileSidebar}
-        showOrgMenu={true}
+        showOrgMenu={!isDesktop}
       />
       
       <div className="flex h-[calc(100vh-64px)] w-full">

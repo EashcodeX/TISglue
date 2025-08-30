@@ -104,9 +104,10 @@ export default function Header({ currentPage, onMenuToggle, onOrgMenuToggle, sho
           {showOrgMenu && (
             <button
               onClick={onOrgMenuToggle}
-              className="lg:hidden p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-all touch-manipulation"
+              className="lg:hidden p-2 text-orange-400 hover:text-white hover:bg-orange-600 rounded-md transition-all touch-manipulation border border-orange-400"
               aria-label="Toggle organization menu"
               type="button"
+              title="Organization Menu"
             >
               <Menu className="w-5 h-5" />
             </button>
