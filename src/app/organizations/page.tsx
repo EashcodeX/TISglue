@@ -143,7 +143,7 @@ export default function OrganizationsPage() {
                   className="flex flex-col items-center cursor-pointer group"
                   onClick={() => handleOrganizationSelect(org.id)}
                 >
-                  <div className={`w-16 h-16 ${getRandomColor(org.name)} rounded-full flex items-center justify-center mb-2 group-hover:scale-105 transition-transform`}>
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 group-hover:scale-105 transition-transform`} style={{ backgroundColor: getRandomColor(org.name) }}>
                     <span className="text-white font-bold text-lg">
                       {getInitials(org.name)}
                     </span>
@@ -172,7 +172,7 @@ export default function OrganizationsPage() {
                   className="flex flex-col items-center cursor-pointer group"
                   onClick={() => handleOrganizationSelect(org.id)}
                 >
-                  <div className={`w-16 h-16 ${getRandomColor(org.name)} rounded-full flex items-center justify-center mb-2 group-hover:scale-105 transition-transform`}>
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 group-hover:scale-105 transition-transform`} style={{ backgroundColor: getRandomColor(org.name) }}>
                     <span className="text-white font-bold text-lg">
                       {getInitials(org.name)}
                     </span>
@@ -231,7 +231,7 @@ export default function OrganizationsPage() {
                 className="flex flex-col items-center cursor-pointer group"
                 onClick={() => handleOrganizationSelect(org.id)}
               >
-                <div className={`w-16 h-16 ${getRandomColor(org.name)} rounded-full flex items-center justify-center mb-2 group-hover:scale-105 transition-transform relative`}>
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 group-hover:scale-105 transition-transform relative`} style={{ backgroundColor: getRandomColor(org.name) }}>
                   <span className="text-white font-bold text-lg">
                     {getInitials(org.name)}
                   </span>

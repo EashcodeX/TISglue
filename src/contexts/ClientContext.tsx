@@ -76,10 +76,22 @@ export function useClientInitials(name: string) {
 // Hook to get client color
 export function useClientColor(name: string) {
   const colors = [
-    'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-red-500',
-    'bg-yellow-500', 'bg-indigo-500', 'bg-pink-500', 'bg-teal-500',
-    'bg-orange-500', 'bg-cyan-500', 'bg-lime-500', 'bg-rose-500',
-    'bg-violet-500', 'bg-amber-500', 'bg-emerald-500', 'bg-sky-500'
+    '#3B82F6', // blue-500
+    '#10B981', // green-500
+    '#8B5CF6', // purple-500
+    '#EF4444', // red-500
+    '#F59E0B', // yellow-500
+    '#6366F1', // indigo-500
+    '#EC4899', // pink-500
+    '#14B8A6', // teal-500
+    '#F97316', // orange-500
+    '#06B6D4', // cyan-500
+    '#84CC16', // lime-500
+    '#F43F5E', // rose-500
+    '#8B5CF6', // violet-500
+    '#F59E0B', // amber-500
+    '#10B981', // emerald-500
+    '#0EA5E9'  // sky-500
   ]
 
   // Create a simple hash from the name for better color distribution
