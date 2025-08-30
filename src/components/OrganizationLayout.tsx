@@ -46,10 +46,10 @@ export default function OrganizationLayout({ children, currentPage, organization
         onMenuToggle={toggleMobileSidebar}
       />
       
-      <div className="flex h-[calc(100vh-64px)]">
-        {/* Desktop Sidebar - Show organization-specific sidebar on desktop */}
-        <div className="hidden lg:block w-64 flex-shrink-0">
-          <div className="h-full overflow-y-auto">
+      <div className="flex h-[calc(100vh-64px)] w-full">
+        {/* Desktop Sidebar - Show organization-specific sidebar on desktop only */}
+        <div className="hidden lg:flex w-64 flex-shrink-0">
+          <div className="h-full overflow-y-auto w-full">
             <Sidebar
               onItemClick={handleSidebarItemClick}
             />
@@ -64,7 +64,7 @@ export default function OrganizationLayout({ children, currentPage, organization
         />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto w-full lg:w-auto">
           <div className="p-4 sm:p-6 lg:p-8">
             {children}
           </div>
