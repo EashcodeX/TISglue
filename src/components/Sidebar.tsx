@@ -527,7 +527,7 @@ export default function Sidebar({
   }
 
   return (
-    <div className={`w-64 bg-gray-800 border-r border-gray-700 h-full overflow-y-auto ${className || 'hidden lg:block'}`}>
+    <div className={`w-64 bg-gray-800 border-r border-gray-700 h-full overflow-y-auto ${className || ''}`}>
       {/* Context-Aware Search Button */}
       <div className="p-3 border-b border-gray-700">
         <button

@@ -90,6 +90,43 @@ body {
   }
 }
 
+/* Desktop layout fixes */
+@media (min-width: 1024px) {
+  /* Ensure sidebar stays in its container */
+  .desktop-sidebar-container {
+    flex-shrink: 0;
+    width: 256px; /* w-64 */
+    position: relative;
+    overflow: hidden; /* Prevent content from bleeding out */
+  }
+
+  /* Ensure main content doesn't overlap sidebar */
+  .main-content-area {
+    flex: 1;
+    min-width: 0; /* Prevent flex item from overflowing */
+    position: relative;
+    overflow-x: hidden; /* Prevent horizontal overflow */
+  }
+
+  /* Prevent sidebar content from bleeding out */
+  .sidebar-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Ensure flex layout is properly contained */
+  .layout-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
 /* Global Search Spotlight Effects */
 @keyframes spotlight-pulse {
   0%, 100% {

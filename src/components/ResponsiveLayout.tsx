@@ -38,10 +38,12 @@ export default function ResponsiveLayout({ children, currentPage }: ResponsiveLa
         onMenuToggle={toggleMobileSidebar}
       />
       
-      <div className="flex h-[calc(100vh-64px)]">
+      <div className="flex h-[calc(100vh-64px)] layout-container">
         {/* Desktop Sidebar - Only show on large screens */}
-        <div className="hidden lg:block">
-          <Sidebar onItemClick={handleSidebarItemClick} className="block" />
+        <div className="hidden lg:block desktop-sidebar-container">
+          <div className="sidebar-content">
+            <Sidebar onItemClick={handleSidebarItemClick} />
+          </div>
         </div>
 
         {/* Mobile Sidebar - Only show on mobile when open */}
@@ -50,9 +52,9 @@ export default function ResponsiveLayout({ children, currentPage }: ResponsiveLa
           onClose={closeMobileSidebar}
           onItemClick={handleSidebarItemClick}
         />
-        
+
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto main-content-area">
           <div className="p-3 sm:p-4 lg:p-6">
             {children}
           </div>
