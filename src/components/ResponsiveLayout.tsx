@@ -39,10 +39,12 @@ export default function ResponsiveLayout({ children, currentPage }: ResponsiveLa
       />
       
       <div className="flex h-[calc(100vh-64px)]">
-        {/* Desktop Sidebar */}
-        <Sidebar onItemClick={handleSidebarItemClick} />
-        
-        {/* Mobile Sidebar */}
+        {/* Desktop Sidebar - Only show on large screens */}
+        <div className="hidden lg:block">
+          <Sidebar onItemClick={handleSidebarItemClick} className="block" />
+        </div>
+
+        {/* Mobile Sidebar - Only show on mobile when open */}
         <MobileSidebar
           isOpen={isMobileSidebarOpen}
           onClose={closeMobileSidebar}
