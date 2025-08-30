@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { useParams } from 'next/navigation'
 import { SidebarService, type SidebarCategory } from '@/lib/sidebar-service'
 import { type SidebarConfig, type SidebarCategory as DBSidebarCategory, type SidebarItem as DBSidebarItem } from '@/lib/supabase'
@@ -257,13 +257,19 @@ interface SidebarProps {
   config?: SidebarSection[]
   className?: string
   onItemClick?: (item: SidebarItem) => void
+  onConfigChange?: (config: SidebarSection[]) => void
 }
 
-export default function Sidebar({
+export interface SidebarRef {
+  toggleSection: (sectionId: string) => void
+}
+
+const Sidebar = forwardRef<SidebarRef, SidebarProps>(({
   config = defaultSidebarConfig,
   className = '',
-  onItemClick
-}: SidebarProps) {
+  onItemClick,
+  onConfigChange
+}, ref) => {
   const params = useParams()
   const { openSearch } = useGlobalSearch()
   const searchContext = useSearchContext()
@@ -450,14 +456,28 @@ export default function Sidebar({
   }
 
   const toggleSection = (sectionId: string) => {
-    setSidebarConfig(prev => 
-      prev.map(section => 
-        section.id === sectionId 
+    setSidebarConfig(prev => {
+      const newConfig = prev.map(section =>
+        section.id === sectionId
           ? { ...section, isExpanded: !section.isExpanded }
           : section
       )
-    )
+      onConfigChange?.(newConfig)
+      return newConfig
+    })
   }
+
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    toggleSection
+  }), [])
+
+  // Call onConfigChange when sidebarConfig changes
+  useEffect(() => {
+    if (sidebarConfig.length > 0) {
+      onConfigChange?.(sidebarConfig)
+    }
+  }, [sidebarConfig, onConfigChange])
 
   const toggleItem = (sectionId: string, itemId: string) => {
     setSidebarConfig(prev => 
@@ -621,4 +641,8 @@ export default function Sidebar({
       )}
     </div>
   )
-}
+})
+
+Sidebar.displayName = 'Sidebar'
+
+export default Sidebar

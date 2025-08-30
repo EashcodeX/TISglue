@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Header from './Header'
 import Sidebar from './Sidebar'
 import MobileSidebar from './MobileSidebar'
+import OrganizationMobileSidebar from './OrganizationMobileSidebar'
 
 interface OrganizationLayoutProps {
   children: React.ReactNode
@@ -13,7 +14,10 @@ interface OrganizationLayoutProps {
 
 export default function OrganizationLayout({ children, currentPage, organizationId }: OrganizationLayoutProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const [isOrgMobileSidebarOpen, setIsOrgMobileSidebarOpen] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
+  const [sidebarConfig, setSidebarConfig] = useState<any[]>([])
+  const [sidebarRef, setSidebarRef] = useState<any>(null)
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -55,11 +59,28 @@ export default function OrganizationLayout({ children, currentPage, organization
     setIsMobileSidebarOpen(false)
   }
 
+  const toggleOrgMobileSidebar = () => {
+    setIsOrgMobileSidebarOpen(!isOrgMobileSidebarOpen)
+  }
+
+  const closeOrgMobileSidebar = () => {
+    setIsOrgMobileSidebarOpen(false)
+  }
+
+  const handleToggleSection = (sectionId: string) => {
+    // This will be handled by the sidebar component
+    if (sidebarRef && sidebarRef.toggleSection) {
+      sidebarRef.toggleSection(sectionId)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <Header 
-        currentPage={currentPage} 
+      <Header
+        currentPage={currentPage}
         onMenuToggle={toggleMobileSidebar}
+        onOrgMenuToggle={toggleOrgMobileSidebar}
+        showOrgMenu={true}
       />
       
       <div className="flex h-[calc(100vh-64px)] w-full">
@@ -69,6 +90,8 @@ export default function OrganizationLayout({ children, currentPage, organization
             <div className="h-full overflow-y-auto w-full">
               <Sidebar
                 onItemClick={handleSidebarItemClick}
+                ref={setSidebarRef}
+                onConfigChange={setSidebarConfig}
               />
             </div>
           </div>
@@ -79,6 +102,15 @@ export default function OrganizationLayout({ children, currentPage, organization
           isOpen={isMobileSidebarOpen}
           onClose={closeMobileSidebar}
           onItemClick={handleSidebarItemClick}
+        />
+
+        {/* Organization Mobile Sidebar - Show organization-specific navigation on mobile */}
+        <OrganizationMobileSidebar
+          isOpen={isOrgMobileSidebarOpen}
+          onClose={closeOrgMobileSidebar}
+          onItemClick={handleSidebarItemClick}
+          sidebarConfig={sidebarConfig}
+          onToggleSection={handleToggleSection}
         />
 
         {/* Main Content */}

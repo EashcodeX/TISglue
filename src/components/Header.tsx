@@ -19,9 +19,11 @@ import {
 interface HeaderProps {
   currentPage?: string
   onMenuToggle?: () => void
+  onOrgMenuToggle?: () => void
+  showOrgMenu?: boolean
 }
 
-export default function Header({ currentPage, onMenuToggle }: HeaderProps) {
+export default function Header({ currentPage, onMenuToggle, onOrgMenuToggle, showOrgMenu }: HeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { selectedClient } = useClient()
@@ -98,6 +100,18 @@ export default function Header({ currentPage, onMenuToggle }: HeaderProps) {
         
         {/* Right side actions */}
         <div className="flex items-center space-x-2 sm:space-x-4">
+          {/* Organization Menu Button - Only show on mobile and organization pages */}
+          {showOrgMenu && (
+            <button
+              onClick={onOrgMenuToggle}
+              className="lg:hidden p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-all touch-manipulation"
+              aria-label="Toggle organization menu"
+              type="button"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
+
           <button className="p-2 text-gray-400 hover:text-white transition-colors">
             <Search className="w-5 h-5" />
           </button>
