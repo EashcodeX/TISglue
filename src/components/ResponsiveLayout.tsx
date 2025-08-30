@@ -39,12 +39,12 @@ export default function ResponsiveLayout({ children, currentPage }: ResponsiveLa
       />
       
       <div className="flex h-[calc(100vh-64px)] layout-container">
-        {/* Desktop Sidebar - Only show on large screens */}
-        <div className="hidden lg:block desktop-sidebar-container">
+        {/* Desktop Sidebar - Hidden completely, using hamburger menu for all screen sizes */}
+        {/* <div className="hidden lg:block desktop-sidebar-container">
           <div className="sidebar-content">
             <Sidebar onItemClick={handleSidebarItemClick} />
           </div>
-        </div>
+        </div> */}
 
         {/* Mobile Sidebar - Only show on mobile when open */}
         <MobileSidebar

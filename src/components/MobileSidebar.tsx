@@ -67,7 +67,7 @@ export default function MobileSidebar({ isOpen, onClose, onItemClick }: MobileSi
         />
       )}
       
-      {/* Sidebar */}
+      {/* Sidebar - Now works on all screen sizes */}
       <div className={`fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] transform transition-transform duration-300 ease-in-out ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
