@@ -359,7 +359,6 @@ export default function GlobalPage() {
             )}
           </div>
         </div>
-      </div>
     </ResponsiveLayout>
   )
 }

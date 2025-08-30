@@ -37,18 +37,20 @@ export default function MobileSidebar({ isOpen, onClose, onItemClick }: MobileSi
     onClose() // Close sidebar after navigation
   }
 
-  if (!isOpen) return null
-
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-        onClick={onClose}
-      />
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
       
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 z-50 w-80 sm:w-64 lg:hidden transform transition-transform duration-300 ease-in-out">
+      <div className={`fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] lg:hidden transform transition-transform duration-300 ease-in-out ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
         <div className="flex flex-col h-full bg-gray-800 border-r border-gray-700 shadow-xl">
           {/* Header with close button */}
           <div className="flex items-center justify-between p-4 border-b border-gray-700">

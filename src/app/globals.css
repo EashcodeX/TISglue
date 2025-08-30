@@ -47,6 +47,47 @@ body {
   .grid {
     gap: 0.75rem;
   }
+
+  /* Fix mobile sidebar overlay */
+  .mobile-sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+  }
+
+  /* Ensure mobile content doesn't overflow */
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Fix mobile viewport */
+  html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+}
+
+/* Fix mobile sidebar positioning */
+@media (max-width: 1024px) {
+  .mobile-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 280px;
+    max-width: 80vw;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .mobile-sidebar.open {
+    transform: translateX(0);
+  }
 }
 
 /* Global Search Spotlight Effects */

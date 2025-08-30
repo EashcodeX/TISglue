@@ -42,13 +42,13 @@ export default function Header({ currentPage, onMenuToggle }: HeaderProps) {
   const getClientColor = useClientColor
 
   return (
-    <header className="bg-gray-800 border-b border-gray-700">
+    <header className="bg-gray-800 border-b border-gray-700 relative z-30">
       <div className="flex items-center justify-between px-4 sm:px-6 py-3">
         <div className="flex items-center space-x-4 sm:space-x-6">
           {/* Mobile Menu Button */}
           <button
             onClick={onMenuToggle}
-            className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors touch-manipulation"
+            className="lg:hidden p-2 -ml-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-all touch-manipulation"
             aria-label="Toggle mobile menu"
             type="button"
           >

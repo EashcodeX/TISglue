@@ -160,12 +160,12 @@ export default function Dashboard() {
   return (
     <ResponsiveLayout currentPage="Dashboard">
       <div>
-        <h1 className="text-2xl font-semibold mb-6">Dashboard</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">Dashboard</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
           {/* Favorites Section */}
           <div className="lg:col-span-2">
-            <div className="bg-gray-800 rounded-lg p-6">
+            <div className="bg-gray-800 rounded-lg p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
                   <Star className="w-5 h-5 text-yellow-500 mr-2" />
@@ -249,7 +249,7 @@ export default function Dashboard() {
             </div>
 
             {/* System Usage Stats */}
-            <div className="bg-gray-800 rounded-lg p-6 mt-6">
+            <div className="bg-gray-800 rounded-lg p-4 sm:p-6 mt-4 sm:mt-6">
               <div className="flex items-center mb-4">
                 <TrendingUp className="w-5 h-5 text-blue-500 mr-2" />
                 <h2 className="text-lg font-medium">System Overview</h2>
@@ -293,7 +293,7 @@ export default function Dashboard() {
           />
 
           {/* Recent Activity */}
-          <div className="bg-gray-800 rounded-lg p-6 mb-6">
+          <div className="bg-gray-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
             <div className="flex items-center mb-4">
               <Activity className="w-5 h-5 text-green-500 mr-2" />
               <h2 className="text-lg font-medium">Recent Activity</h2>
@@ -328,7 +328,7 @@ export default function Dashboard() {
           </div>
 
           {/* System Alerts */}
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className="bg-gray-800 rounded-lg p-4 sm:p-6">
             <div className="flex items-center mb-4">
               <Bell className="w-5 h-5 text-red-500 mr-2" />
               <h2 className="text-lg font-medium">System Alerts</h2>
