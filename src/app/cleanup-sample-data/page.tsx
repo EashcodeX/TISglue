@@ -110,7 +110,7 @@ export default function CleanupSampleData() {
       addResult('🎉 Sample data cleanup completed!')
 
     } catch (error) {
-      addResult(`❌ Cleanup failed: ${error.message}`)
+      addResult(`❌ Cleanup failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
     
     setLoading(false)

@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase, type Organization, type SiteSummaryLegacy } from '@/lib/supabase'
 import { useClient } from '@/contexts/ClientContext'
-import Sidebar from '@/components/Sidebar'
+import Sidebar, { SidebarItem } from '@/components/Sidebar'
 import Header from '@/components/Header'
+
 import { 
   Building2, 
   ArrowLeft,
@@ -85,9 +86,9 @@ export default function EditSiteSummaryLegacyPage() {
     }
   }
 
-  const handleSidebarItemClick = (href: string) => {
-    if (href.startsWith('/')) {
-      router.push(`/organizations/${params.id}${href}`)
+  const handleSidebarItemClick = (item: SidebarItem) => {
+    if (item.href && item.href.startsWith('/')) {
+      router.push(`/organizations/${params.id}${item.href}`)
     }
   }
 
@@ -101,7 +102,9 @@ export default function EditSiteSummaryLegacyPage() {
   const handleArrayInputChange = (field: string, index: number, value: string) => {
     setFormData(prev => ({
       ...prev,
-      [field]: prev[field as keyof typeof prev].map((item: string, i: number) => i === index ? value : item)
+      [field]: Array.isArray(prev[field as keyof typeof prev])
+        ? (prev[field as keyof typeof prev] as string[]).map((item: string, i: number) => i === index ? value : item)
+        : prev[field as keyof typeof prev]
     }))
   }
 
@@ -115,7 +118,9 @@ export default function EditSiteSummaryLegacyPage() {
   const removeArrayItem = (field: string, index: number) => {
     setFormData(prev => ({
       ...prev,
-      [field]: prev[field as keyof typeof prev].filter((_: string, i: number) => i !== index)
+      [field]: Array.isArray(prev[field as keyof typeof prev])
+        ? (prev[field as keyof typeof prev] as string[]).filter((_: string, i: number) => i !== index)
+        : prev[field as keyof typeof prev]
     }))
   }
 

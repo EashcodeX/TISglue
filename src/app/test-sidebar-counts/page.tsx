@@ -55,8 +55,8 @@ export default function TestSidebarCounts() {
       
       addResult('🔍 Sidebar items with counts:')
       Object.entries(sidebarData).forEach(([categoryName, category]) => {
-        addResult(`📁 ${categoryName}:`)
-        category.systemItems.forEach(item => {
+        addResult(`📁 ${categoryName}:`);
+        (category as any).systemItems.forEach((item: any) => {
           if (item.count !== undefined) {
             addResult(`  • ${item.name}: ${item.count}`)
           }
@@ -64,7 +64,7 @@ export default function TestSidebarCounts() {
       })
 
     } catch (error) {
-      addResult(`❌ Error: ${error.message}`)
+      addResult(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
     
     setLoading(false)
@@ -171,7 +171,7 @@ export default function TestSidebarCounts() {
       addResult('🎉 Sample data added! Test counts again to see the changes.')
 
     } catch (error) {
-      addResult(`❌ Error adding sample data: ${error.message}`)
+      addResult(`❌ Error adding sample data: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
     
     setLoading(false)

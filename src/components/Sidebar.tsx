@@ -416,13 +416,13 @@ export default function Sidebar({
         Object.entries(sidebarData).forEach(([categoryKey, category]) => {
           const section: SidebarSection = {
             id: categoryKey.toLowerCase().replace(/\s+/g, '-'),
-            title: category.name,
+            title: (category as any).name,
             isCollapsible: true,
             isExpanded: true,
             items: []
-          }
+          };
 
-          category.systemItems.forEach((systemItem, index) => {
+          (category as any).systemItems.forEach((systemItem: any, index: number) => {
             section.items.push({
               id: `${categoryKey}-system-${index}`,
               label: systemItem.name,

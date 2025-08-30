@@ -122,7 +122,7 @@ export class MicrosoftAuthService {
 
     } catch (error) {
       console.error('❌ Error exchanging code for tokens:', error)
-      throw new Error(`Failed to exchange code for tokens: ${error.message}`)
+      throw new Error(`Failed to exchange code for tokens: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -174,7 +174,7 @@ export class MicrosoftAuthService {
 
     } catch (error) {
       console.error('❌ Error refreshing token:', error)
-      throw new Error(`Failed to refresh token: ${error.message}`)
+      throw new Error(`Failed to refresh token: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -210,7 +210,7 @@ export class MicrosoftAuthService {
 
     } catch (error) {
       console.error('❌ Error getting user info:', error)
-      throw new Error(`Failed to get user info: ${error.message}`)
+      throw new Error(`Failed to get user info: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -270,7 +270,7 @@ export class MicrosoftAuthService {
 
     } catch (error) {
       console.error('❌ Error revoking tokens:', error)
-      throw new Error(`Failed to revoke tokens: ${error.message}`)
+      throw new Error(`Failed to revoke tokens: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

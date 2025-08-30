@@ -90,7 +90,6 @@ export default function SidebarManagementPage() {
         const newSidebarItem = await SidebarService.createSidebarItem({
           ...sidebarItemData,
           organization_id: params.id as string,
-          item_type: 'page',
           is_system: false
         })
 
@@ -125,13 +124,14 @@ export default function SidebarManagementPage() {
   const handleEdit = (item: SidebarItem) => {
     setEditingItem(item)
     setFormData({
-      item_name: item.item_name,
-      item_slug: item.item_slug,
+      item_name: item.item_label,
+      item_slug: item.item_href || '',
       parent_category: item.parent_category || 'CLIENT CONTACT',
-      icon: item.icon,
+      icon: item.icon_name,
       description: item.description || '',
-      sort_order: item.sort_order,
-      is_active: item.is_active
+      content_type: 'rich-text',
+      sort_order: item.display_order,
+      is_active: item.is_visible
     })
     setShowForm(true)
   }
@@ -381,8 +381,8 @@ export default function SidebarManagementPage() {
                   required
                 >
                   {SidebarService.getAvailableCategories().map(category => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
+                    <option key={category} value={category}>
+                      {category}
                     </option>
                   ))}
                 </select>
@@ -398,8 +398,8 @@ export default function SidebarManagementPage() {
                   className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white"
                 >
                   {SidebarService.getAvailableIcons().map(icon => (
-                    <option key={icon.value} value={icon.value}>
-                      {icon.label}
+                    <option key={icon} value={icon}>
+                      {icon}
                     </option>
                   ))}
                 </select>

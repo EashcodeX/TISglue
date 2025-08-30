@@ -97,7 +97,7 @@ export default function DebugRouting() {
       addResult('🎉 Debug completed!')
 
     } catch (error) {
-      addResult(`❌ Debug failed: ${error.message}`)
+      addResult(`❌ Debug failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
     
     setLoading(false)
@@ -122,7 +122,7 @@ export default function DebugRouting() {
       if (selectedOrg) debugOrganization(selectedOrg)
       
     } catch (error) {
-      alert(`Error: ${error.message}`)
+      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -133,7 +133,7 @@ export default function DebugRouting() {
     try {
       router.push(url)
     } catch (error) {
-      addResult(`❌ Navigation failed: ${error.message}`)
+      addResult(`❌ Navigation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

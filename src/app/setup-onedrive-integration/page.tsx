@@ -118,7 +118,7 @@ export default function SetupOneDriveIntegration() {
       addResult('  3. Test authentication flow')
 
     } catch (error) {
-      addResult(`❌ Setup failed: ${error.message}`)
+      addResult(`❌ Setup failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
     
     setSetting(false)
@@ -170,7 +170,7 @@ export default function SetupOneDriveIntegration() {
       addResult('🎉 Database schema test completed!')
 
     } catch (error) {
-      addResult(`❌ Test failed: ${error.message}`)
+      addResult(`❌ Test failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
     
     setSetting(false)

@@ -1,12 +1,28 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Production output configuration - standalone for Docker/AWS, default for Vercel
+  output: process.env.DEPLOYMENT_TARGET === 'docker' ? 'standalone' : undefined,
+
   // Vercel-optimized configuration
   compress: true,
   poweredByHeader: false,
-  
+
   // Image optimization
   images: {
-    domains: ['your-domain.com', 'images.unsplash.com', 'via.placeholder.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+      }
+    ],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -17,7 +33,7 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  
+
   // Security headers
   async headers() {
     return [
@@ -48,32 +64,31 @@ const nextConfig = {
       },
     ]
   },
-  
+
   // Redirects
   async redirects() {
     return [
       // Removed admin redirect to allow access to admin dashboard
     ]
   },
-  
-  // Build optimization
-  // experimental: {
-  //   optimizeCss: true,
-  // },
 
-  // Disable ESLint during build for faster deployment
+  // Build optimization
+  experimental: {
+    // Removed optimizeCss due to missing critters dependency
+  },
+
+  // External packages for server components
+  serverExternalPackages: ['@supabase/supabase-js'],
+
+  // Temporarily disable ESLint for production builds (can be re-enabled after cleanup)
   eslint: {
     ignoreDuringBuilds: true,
   },
 
-  // Disable TypeScript checking during build for faster deployment
+  // TypeScript checking is now working
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
-  
-  // Output configuration for static export (if needed)
-  // output: 'export',
-  // trailingSlash: true,
 }
 
 module.exports = nextConfig

@@ -59,7 +59,7 @@ export default function SidebarEditor({ organizationId, onClose, onSave }: Sideb
 
     try {
       setSaving(true)
-      await SidebarService.updateItemLabel(editingItem, editValue.trim())
+      await SidebarService.updateSidebarItem((editingItem as any).id, { item_label: editValue.trim() })
       
       // Update local state
       if (config) {

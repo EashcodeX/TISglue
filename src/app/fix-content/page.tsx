@@ -23,7 +23,7 @@ export default function FixContent() {
       
     } catch (error) {
       console.error('❌ Error creating content:', error)
-      setResult(`❌ Error: ${error.message}`)
+      setResult(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
     
     setLoading(false)

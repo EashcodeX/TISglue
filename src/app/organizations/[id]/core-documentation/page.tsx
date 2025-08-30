@@ -304,10 +304,10 @@ export default function CoreDocumentationPage() {
                             <div className="font-medium text-white flex items-center space-x-2">
                               <span>{doc.document_name}</span>
                               {doc.is_confidential && (
-                                <Shield className="w-4 h-4 text-red-400" title="Confidential" />
+                                <Shield className="w-4 h-4 text-red-400" />
                               )}
                               {doc.file_url && (
-                                <ExternalLink className="w-4 h-4 text-gray-400" title="Has file attachment" />
+                                <ExternalLink className="w-4 h-4 text-gray-400" />
                               )}
                             </div>
                             {doc.description && (

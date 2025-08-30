@@ -312,7 +312,7 @@ export class SampleDataService {
           parent_category: item.category,
           item_name: item.name,
           item_slug: item.slug,
-          item_type: 'page',
+
           icon: item.icon,
           description: item.description,
           sort_order: 100,

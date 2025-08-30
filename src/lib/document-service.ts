@@ -89,7 +89,7 @@ export class DocumentService {
 
     } catch (error) {
       console.error('❌ Error uploading document:', error)
-      throw new Error(`Failed to upload document: ${error.message}`)
+      throw new Error(`Failed to upload document: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -124,7 +124,7 @@ export class DocumentService {
 
     } catch (error) {
       console.error('❌ Error downloading document:', error)
-      throw new Error(`Failed to download document: ${error.message}`)
+      throw new Error(`Failed to download document: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -152,7 +152,7 @@ export class DocumentService {
           const graphService = new MicrosoftGraphService(accessToken)
           await graphService.deleteFile(document.onedrive_file_id)
         } catch (oneDriveError) {
-          console.warn('⚠️ Could not delete from OneDrive (file may already be deleted):', oneDriveError.message)
+          console.warn('⚠️ Could not delete from OneDrive (file may already be deleted):', oneDriveError instanceof Error ? oneDriveError.message : 'Unknown error')
         }
       }
 
@@ -170,7 +170,7 @@ export class DocumentService {
 
     } catch (error) {
       console.error('❌ Error deleting document:', error)
-      throw new Error(`Failed to delete document: ${error.message}`)
+      throw new Error(`Failed to delete document: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -196,7 +196,7 @@ export class DocumentService {
 
     } catch (error) {
       console.error('❌ Error fetching documents:', error)
-      throw new Error(`Failed to fetch documents: ${error.message}`)
+      throw new Error(`Failed to fetch documents: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -222,7 +222,7 @@ export class DocumentService {
 
     } catch (error) {
       console.error('❌ Error fetching document:', error)
-      throw new Error(`Failed to fetch document: ${error.message}`)
+      throw new Error(`Failed to fetch document: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -255,7 +255,7 @@ export class DocumentService {
 
     } catch (error) {
       console.error('❌ Error updating document:', error)
-      throw new Error(`Failed to update document: ${error.message}`)
+      throw new Error(`Failed to update document: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -309,7 +309,7 @@ export class DocumentService {
 
             synced++
           } catch (error) {
-            errors.push(`Failed to sync ${oneDriveFile.name}: ${error.message}`)
+            errors.push(`Failed to sync ${oneDriveFile.name}: ${error instanceof Error ? error.message : 'Unknown error'}`)
           }
         }
       }
@@ -319,7 +319,7 @@ export class DocumentService {
 
     } catch (error) {
       console.error('❌ Error syncing documents:', error)
-      throw new Error(`Failed to sync documents: ${error.message}`)
+      throw new Error(`Failed to sync documents: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

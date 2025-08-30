@@ -46,8 +46,8 @@ export default function DebugContent() {
           const content = await PageContentService.getPageContent(item.id)
           contents.push({ sidebarItem: item, content })
         } catch (error) {
-          console.log(`No content found for ${item.item_name}:`, error.message)
-          contents.push({ sidebarItem: item, content: null, error: error.message })
+          console.log(`No content found for ${item.item_name}:`, error instanceof Error ? error.message : 'Unknown error')
+          contents.push({ sidebarItem: item, content: null, error: error instanceof Error ? error.message : 'Unknown error' })
         }
       }
       setPageContents(contents)

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export default function FixOnsiteError() {
-  const [organizations, setOrganizations] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<string[]>([])
 
@@ -19,13 +18,13 @@ export default function FixOnsiteError() {
 
   const loadOrganizations = async () => {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('organizations')
         .select('id, name')
         .limit(10)
-      
+
       if (error) throw error
-      setOrganizations(data || [])
+      // Organizations loaded successfully
     } catch (error) {
       console.error('Error loading organizations:', error)
     }
@@ -116,7 +115,7 @@ export default function FixOnsiteError() {
       addResult('🎉 Fix completed! Refresh your browser and try navigating again.')
 
     } catch (error) {
-      addResult(`❌ Fix failed: ${error.message}`)
+      addResult(`❌ Fix failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
     
     setLoading(false)
@@ -175,7 +174,7 @@ export default function FixOnsiteError() {
       addResult('🎉 All custom sidebar items removed! Organizations now have clean sidebars.')
 
     } catch (error) {
-      addResult(`❌ Cleanup failed: ${error.message}`)
+      addResult(`❌ Cleanup failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
     
     setLoading(false)

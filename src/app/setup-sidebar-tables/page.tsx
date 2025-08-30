@@ -167,7 +167,7 @@ export default function SetupSidebarTables() {
       addResult('🔄 Sidebar counts will now show real data from these tables')
 
     } catch (error) {
-      addResult(`❌ Setup failed: ${error.message}`)
+      addResult(`❌ Setup failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
     
     setCreating(false)

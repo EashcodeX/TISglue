@@ -94,12 +94,12 @@ export class SidebarService {
       .from('sidebar_categories')
       .select('id, category_key')
       .eq('organization_id', organizationId)
-    const client = categories.find(c => c.category_key === 'client-contact')
-    const core = categories.find(c => c.category_key === 'core-documentation')
+    const client = categories?.find(c => c.category_key === 'client-contact')
+    const core = categories?.find(c => c.category_key === 'core-documentation')
     if (!client || !core) throw new Error('Required sidebar categories not found after upsert')
 
     const allowedCategoryIds = new Set([client.id, core.id])
-    const extraCategoryIds = categories.filter(c => !allowedCategoryIds.has(c.id)).map(c => c.id)
+    const extraCategoryIds = categories?.filter(c => !allowedCategoryIds.has(c.id)).map(c => c.id) || []
     if (extraCategoryIds.length > 0) {
       // Delete items under extra categories then delete categories
       await supabase.from('sidebar_items').delete().in('category_id', extraCategoryIds)

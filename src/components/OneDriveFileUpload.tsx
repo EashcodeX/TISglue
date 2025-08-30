@@ -140,11 +140,11 @@ export default function OneDriveFileUpload({
       // Update status to error
       setFiles(prev => prev.map(f => 
         f.id === uploadFile.id 
-          ? { ...f, status: 'error', error: error.message }
+          ? { ...f, status: 'error', error: error instanceof Error ? error.message : 'Unknown error' }
           : f
       ))
 
-      onUploadError?.(error.message)
+      onUploadError?.(error instanceof Error ? error.message : 'Unknown error')
     }
   }
 

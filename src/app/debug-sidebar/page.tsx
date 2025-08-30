@@ -116,7 +116,7 @@ export default function DebugSidebarPage() {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-4">Debug Sidebar Data</h1>
-      <p className="mb-4">Organization ID: <code className="bg-gray-100 px-2 py-1 rounded">{organizationId}</code></p>
+      <p className="mb-4">Organization ID: <code className="bg-gray-100 px-2 py-1 rounded">{selectedOrg}</code></p>
       
       <div className="space-y-8">
         <div>
@@ -156,9 +156,10 @@ export default function DebugSidebarPage() {
       </div>
 
       <div className="mt-8">
-        <button 
-          onClick={loadSidebarData}
+        <button
+          onClick={() => loadSidebarData(selectedOrg)}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          disabled={!selectedOrg}
         >
           Reload Data
         </button>

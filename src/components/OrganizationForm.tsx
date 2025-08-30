@@ -158,7 +158,7 @@ export default function OrganizationForm({ initialData, onSave, onCancel, saving
   const updateContact = (id: string, field: keyof ContactInfo, value: string | boolean) => {
     setFormData(prev => ({
       ...prev,
-      contacts: prev.contacts.map(contact =>
+      contacts: prev.contacts.map((contact: any) =>
         contact.id === id ? { ...contact, [field]: value } : contact
       )
     }))
@@ -167,7 +167,7 @@ export default function OrganizationForm({ initialData, onSave, onCancel, saving
   const removeContact = (id: string) => {
     setFormData(prev => ({
       ...prev,
-      contacts: prev.contacts.filter(contact => contact.id !== id)
+      contacts: prev.contacts.filter((contact: any) => contact.id !== id)
     }))
   }
 
@@ -189,7 +189,7 @@ export default function OrganizationForm({ initialData, onSave, onCancel, saving
   const updateLocation = (id: string, field: keyof LocationInfo, value: string) => {
     setFormData(prev => ({
       ...prev,
-      locations: prev.locations.map(location =>
+      locations: prev.locations.map((location: any) =>
         location.id === id ? { ...location, [field]: value } : location
       )
     }))
@@ -198,7 +198,7 @@ export default function OrganizationForm({ initialData, onSave, onCancel, saving
   const removeLocation = (id: string) => {
     setFormData(prev => ({
       ...prev,
-      locations: prev.locations.filter(location => location.id !== id)
+      locations: prev.locations.filter((location: any) => location.id !== id)
     }))
   }
 
@@ -505,7 +505,7 @@ export default function OrganizationForm({ initialData, onSave, onCancel, saving
         </div>
 
         <div className="space-y-4">
-          {formData.contacts.map((contact) => (
+          {formData.contacts.map((contact: any) => (
             <div key={contact.id} className="bg-gray-700 rounded-lg p-4">
               <div className="grid grid-cols-3 gap-4 mb-3">
                 <div>
@@ -623,7 +623,7 @@ export default function OrganizationForm({ initialData, onSave, onCancel, saving
         </div>
 
         <div className="space-y-3">
-          {formData.locations.map((location) => (
+          {formData.locations.map((location: any) => (
             <div key={location.id} className="bg-gray-700 rounded-lg p-4">
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <div>
@@ -684,7 +684,7 @@ export default function OrganizationForm({ initialData, onSave, onCancel, saving
                     className="w-full bg-gray-600 border border-gray-500 rounded px-3 py-2 text-white text-sm"
                   >
                     <option value="">Select contact</option>
-                    {formData.contacts.map(contact => (
+                    {formData.contacts.map((contact: any) => (
                       <option key={contact.id} value={contact.name}>{contact.name}</option>
                     ))}
                   </select>
@@ -731,7 +731,7 @@ export default function OrganizationForm({ initialData, onSave, onCancel, saving
               onChange={(e) => updateFormData('afterHourAccess', 'primaryContact', e.target.value)}
               className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white"
             >
-              {formData.contacts.map(contact => (
+              {formData.contacts.map((contact: any) => (
                 <option key={contact.id} value={contact.name}>{contact.name}</option>
               ))}
             </select>
@@ -776,7 +776,7 @@ export default function OrganizationForm({ initialData, onSave, onCancel, saving
               onChange={(e) => updateFormData('clientAuthorization', 'securityAuthorization', e.target.value)}
               className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white"
             >
-              {formData.contacts.map(contact => (
+              {formData.contacts.map((contact: any) => (
                 <option key={contact.id} value={contact.name}>{contact.name}</option>
               ))}
             </select>
@@ -789,7 +789,7 @@ export default function OrganizationForm({ initialData, onSave, onCancel, saving
               onChange={(e) => updateFormData('clientAuthorization', 'purchasingAuthority', e.target.value)}
               className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white"
             >
-              {formData.contacts.map(contact => (
+              {formData.contacts.map((contact: any) => (
                 <option key={contact.id} value={contact.name}>{contact.name}</option>
               ))}
             </select>

@@ -296,7 +296,7 @@ export default function PasswordsPage() {
                         </td>
                         <td className="p-4">
                           <div className="flex items-center space-x-3">
-                            {getPasswordTypeIcon(password.password_type)}
+                            {getPasswordTypeIcon(password.password_type || '')}
                             <span className="text-white">{password.name}</span>
                           </div>
                         </td>
@@ -305,7 +305,7 @@ export default function PasswordsPage() {
                             <span className="text-gray-300">{password.username || '-'}</span>
                             {password.username && (
                               <button
-                                onClick={() => copyToClipboard(password.username)}
+                                onClick={() => copyToClipboard(password.username || '')}
                                 className="p-1 text-gray-400 hover:text-white"
                               >
                                 <Copy className="w-3 h-3" />

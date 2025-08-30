@@ -66,7 +66,7 @@ export class MicrosoftGraphService {
       const driveResponse = await this.makeGraphRequest('/me/drive')
       this.driveId = driveResponse.id
       console.log('✅ Personal OneDrive detected:', this.driveId)
-      return this.driveId
+      return this.driveId!
     } catch (error: any) {
       console.error('❌ Failed to get personal drive:', error)
       throw new Error(`Failed to access personal OneDrive: ${error.message}`)
@@ -158,7 +158,7 @@ export class MicrosoftGraphService {
       console.log('✅ File uploaded successfully:', result.id)
       return result
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error uploading file:', error)
       throw new Error(`Failed to upload file: ${error.message}`)
     }
@@ -196,13 +196,13 @@ export class MicrosoftGraphService {
     try {
       console.log('🗑️ Deleting file from OneDrive:', fileId)
 
-      await this.client
-        .api(`/me/drive/items/${fileId}`)
-        .delete()
+      await this.makeGraphRequest(`/me/drive/items/${fileId}`, {
+        method: 'DELETE'
+      })
 
       console.log('✅ File deleted successfully')
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error deleting file:', error)
       throw new Error(`Failed to delete file: ${error.message}`)
     }
@@ -213,16 +213,17 @@ export class MicrosoftGraphService {
    */
   async createShareLink(fileId: string, type: 'view' | 'edit' = 'view'): Promise<string> {
     try {
-      const permission = await this.client
-        .api(`/me/drive/items/${fileId}/createLink`)
-        .post({
+      const permission = await this.makeGraphRequest(`/me/drive/items/${fileId}/createLink`, {
+        method: 'POST',
+        body: JSON.stringify({
           type: type,
           scope: 'organization'
         })
+      })
 
       return permission.link.webUrl
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error creating share link:', error)
       throw new Error(`Failed to create share link: ${error.message}`)
     }
@@ -237,10 +238,7 @@ export class MicrosoftGraphService {
 
       const organizationFolderId = await this.getOrCreateOrganizationFolder(organizationId, organizationName)
 
-      const response = await this.client
-        .api(`/me/drive/items/${organizationFolderId}/children`)
-        .expand('children')
-        .get()
+      const response = await this.makeGraphRequest(`/me/drive/items/${organizationFolderId}/children?$expand=children`)
 
       const files: OneDriveFile[] = []
 
@@ -266,7 +264,7 @@ export class MicrosoftGraphService {
       console.log(`✅ Found ${files.length} files`)
       return files
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error listing files:', error)
       throw new Error(`Failed to list files: ${error.message}`)
     }
@@ -386,13 +384,14 @@ export class MicrosoftGraphService {
     onProgress?: (progress: UploadProgress) => void
   ): Promise<any> {
     // Create upload session
-    const uploadSession = await this.client
-      .api(`/me/drive/items/${folderId}:/${fileName}:/createUploadSession`)
-      .post({
+    const uploadSession = await this.makeGraphRequest(`/me/drive/items/${folderId}:/${fileName}:/createUploadSession`, {
+      method: 'POST',
+      body: JSON.stringify({
         item: {
           '@microsoft.graph.conflictBehavior': 'rename'
         }
       })
+    })
 
     const uploadUrl = uploadSession.uploadUrl
     const fileSize = file.size
@@ -438,9 +437,7 @@ export class MicrosoftGraphService {
 
   private async getDownloadUrl(fileId: string): Promise<string> {
     try {
-      const response = await this.client
-        .api(`/me/drive/items/${fileId}`)
-        .get()
+      const response = await this.makeGraphRequest(`/me/drive/items/${fileId}`)
 
       return response['@microsoft.graph.downloadUrl'] || ''
     } catch (error) {
@@ -450,9 +447,7 @@ export class MicrosoftGraphService {
   }
 
   private async listFilesInFolder(folderId: string, folderPath: string): Promise<OneDriveFile[]> {
-    const response = await this.client
-      .api(`/me/drive/items/${folderId}/children`)
-      .get()
+    const response = await this.makeGraphRequest(`/me/drive/items/${folderId}/children`)
 
     const files: OneDriveFile[] = []
 
