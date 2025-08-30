@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from './Header'
 import Sidebar from './Sidebar'
 import MobileSidebar from './MobileSidebar'
@@ -13,6 +13,22 @@ interface OrganizationLayoutProps {
 
 export default function OrganizationLayout({ children, currentPage, organizationId }: OrganizationLayoutProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(false)
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= 1024)
+    }
+
+    // Check initial screen size
+    checkScreenSize()
+
+    // Add event listener for window resize
+    window.addEventListener('resize', checkScreenSize)
+
+    // Cleanup
+    return () => window.removeEventListener('resize', checkScreenSize)
+  }, [])
 
   const handleSidebarItemClick = (item: any) => {
     // Handle navigation - use Next.js router for better performance
@@ -48,13 +64,15 @@ export default function OrganizationLayout({ children, currentPage, organization
       
       <div className="flex h-[calc(100vh-64px)] w-full">
         {/* Desktop Sidebar - Show organization-specific sidebar on desktop only */}
-        <div className="hidden lg:flex w-64 flex-shrink-0">
-          <div className="h-full overflow-y-auto w-full">
-            <Sidebar
-              onItemClick={handleSidebarItemClick}
-            />
+        {isDesktop && (
+          <div className="w-64 flex-shrink-0">
+            <div className="h-full overflow-y-auto w-full">
+              <Sidebar
+                onItemClick={handleSidebarItemClick}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Mobile Sidebar - Show main navigation on mobile */}
         <MobileSidebar
