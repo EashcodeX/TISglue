@@ -80,10 +80,21 @@ export default function DocumentsPage() {
   const fetchDocuments = async () => {
     try {
       setLoading(true)
-      const documents = await DocumentService.getDocuments(params.id as string)
-      setDocuments(documents)
+
+      // Use the new API route with proper RLS
+      const response = await fetch(`/api/documents?organization_id=${params.id}`)
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to fetch documents')
+      }
+
+      const result = await response.json()
+      setDocuments(result.data || [])
     } catch (error) {
       console.error('Error fetching documents:', error)
+      // Show user-friendly error message
+      setDocuments([])
     } finally {
       setLoading(false)
     }
@@ -301,7 +312,7 @@ export default function DocumentsPage() {
 
     try {
       setIsDeleting(doc.id)
-      const response = await fetch(`/api/documents/${doc.id}/delete`, {
+      const response = await fetch(`/api/documents/${doc.id}`, {
         method: 'DELETE'
       })
 

@@ -8,6 +8,7 @@ export async function middleware(req: NextRequest) {
   // Paths that should be accessible without auth
   const { pathname } = req.nextUrl
   const isAuthRoute = pathname.startsWith('/auth')
+  const isDebugRoute = pathname.startsWith('/test-') || pathname.startsWith('/debug-') || pathname.startsWith('/setup-')
   const isStatic =
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon') ||
@@ -17,7 +18,7 @@ export async function middleware(req: NextRequest) {
     pathname === '/sw.js' ||
     pathname.startsWith('/api/health') // allow simple health checks
 
-  if (isAuthRoute || isStatic) {
+  if (isAuthRoute || isStatic || isDebugRoute) {
     return res
   }
 
@@ -27,8 +28,11 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession()
 
+  console.log(`🔍 Middleware: ${pathname}, Session: ${session ? 'Yes' : 'No'}`)
+
   // If no session and not on an auth/static route, redirect to login
   if (!session) {
+    console.log(`🔒 Redirecting ${pathname} to login (no session)`)
     const redirectUrl = req.nextUrl.clone()
     redirectUrl.pathname = '/auth/login'
     redirectUrl.searchParams.set('redirect', pathname)

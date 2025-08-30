@@ -99,14 +99,14 @@ export default function OneDriveFileUpload({
 
       const formData = new FormData()
       formData.append('file', uploadFile.file)
-      formData.append('organizationId', organizationId)
-      formData.append('organizationName', organizationName)
+      formData.append('organization_id', organizationId)
+      formData.append('organization_name', organizationName)
       formData.append('name', uploadFile.file.name)
       if (category) {
         formData.append('category', category)
       }
 
-      const response = await fetch('/api/documents/simple-upload', {
+      const response = await fetch('/api/documents/upload', {
         method: 'POST',
         body: formData
       })
